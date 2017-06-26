@@ -1,0 +1,23 @@
+<!--
+  Конструкция #todoForm="ngForm" позволяет поместить объект формы в переменную todoForm
+  Это нужно, чтобы иметь возможность перегрузить форму через reset()
+
+
+ -->
+<form class="action todo-form" (ngSubmit)="create(); todoForm.reset()" #todoForm="ngForm"  name="newTodoForm" >
+    <!--
+    2-way Binding
+    С помощью ngModel осуществляется привязка данных
+    newTodoTitle - свойство класса
+    [] скобки - для того, чтобы привязать инпут к свойству
+    () скобки - для того, чтобы привязаться к событию обновления этого свойства
+    Вывод свойства в двойных скобках {{}}, чтобы воочию видеть работу байндинга
+
+    [disabled]="todoForm.form.invalid" - кнопка не активна, если форма не валидна
+    -->
+    <input type="text" placeholder="+" required [(ngModel)]="newTodoTitle" name="newTaskTitle" >
+
+    <button type="submit">Add new item</button>
+
+    {{ newTodoTitle }}
+</form>

@@ -1,0 +1,9 @@
+/**
+Чтобы материал-иконки работали в директиве, надо их здесь заимпортить,
+но саму тему импортить НЕ нужно
+ */
+
+/*@import '~@angular/material/prebuilt-themes/indigo-pink.css';*/
+
+@import 'https://fonts.googleapis.com/icon?family=Material+Icons';
+@import "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic";

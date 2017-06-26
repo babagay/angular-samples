@@ -1,0 +1,48 @@
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+html, body{
+  height: 100%;
+  font-family: Arial, Helvetica, sans-serif
+}
+
+a.active {
+  background-color: gray;
+}
+
+.sub-title {
+  color: #7f747e;
+  font-size:75%;
+}
+
+.completed {
+  font-weight: bold;
+}
+
+.foo{color:forestgreen;}
+
+.flex-container {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  width: 100%;
+  height: 350px;
+  background-color: lightgrey;
+}
+
+.example-card.mat-card {
+  background-color: cornflowerblue;
+  width: 100px;
+  height: 100px;
+  margin: 10px;
+}
+
+.example-card .mat-card-image {
+  width: 100px;
+}
+
+todo-form,
+todo-list {
+  width: 100%;
+}
+

@@ -1,0 +1,25 @@
+<h4 class="foo">Пример списка с использованием дииректив</h4>
+<!--<span class="sub-title">* обозначает струткутрную директиву (которая создаёт или добавляет элементы DOM)</span>-->
+
+
+
+
+<div class="todo-list" *ngIf="todoItemsArr.length">
+    <!--<div *ngFor="let todo of toDos" [class.completed]="todo.completed" class="todo-item">-->
+
+    <!--Так было в примере, но не заработало, т.к. при таком варианте в переменную todoItem класса TodoitemComponent не попадало значение переменной цикла -->
+    <!--<todo-item *ngFor="let todoItem of todoItemsArr"></todo-item>-->
+
+    <!--В этом варианте мы забрасываем переменную цикла todo в поле TodoItemComponent.todoItem явно-->
+    <!--А также, передаем ссылку на родительский компонент в поле TodoItemComponent.parentCmp-->
+    <!--Когда возникает событие TodoItem.deleteItem, мы обрабатываем его в TodoList.removeItemFromList() и, т.о. пробрасываем событие из дочернего компонента в родителя -->
+    <!--Можно писать так, если надо передать просто текущий объект: removeItemFromList(todo)-->
+    <!--[todoItem]="todo" означает, что мы пробрасываем переменную цикла todo в переменную компонента todoItem-->
+    <div *ngFor="let todo of todoItemsArr" >
+        <!--Поле TodoItem.del эмитирует событие, которое ловится в TodoList.removeItemFromList-->
+        <!--Передавать $event обязательно-->
+        <!--Либо мы можем использовтаь алиас deleteThisItem-->
+        <todo-item [todoItem]="todo" [parentCmp]="prnt" (deleteThisItem)="removeItemFromList($event)"></todo-item>
+    </div>
+    <!--</div>-->
+</div>

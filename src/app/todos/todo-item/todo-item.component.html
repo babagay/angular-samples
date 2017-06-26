@@ -1,0 +1,23 @@
+
+
+<div class="todo-item" [class.completed]="todoItem.completed" class="todo-item" >
+
+    <!--Явно todoItem в метод mtoggle можно НЕ передавать, т.к. в компонент пробрасывается переменная цикла, которая этим же объектом и является-->
+    <button class="checkbox icon" (click)="mtoggle()">
+        <i class="material-icons" [textContent]="todoItem.completed ? 'check_box' : 'check_box_outline_blank'">
+            {{ todoItem.completed ? 'check_box' : 'check_box_outline_blank' }}</i>
+    </button>
+
+
+    {{ todoItem.title }}
+    -
+    ({{ todoItem.id }})
+
+    <div class="actions" style="margin-bottom: 10px">
+        <!--В delete() можно передать todoItem, можно $event, а можно ничего не предавать-->
+        <button class="delete icon" (click)="delete($event)">
+            <i class="material-icons">delete</i>
+        </button>
+    </div>
+
+</div>

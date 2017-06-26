@@ -1,0 +1,14 @@
+<!--Todo - родительский компонент по отношению к TodoList и TodoForm, поэтому, шаблон к-та Todo сключает вызовы подшаблонов-->
+
+<!-- Изначально массив тудушек хранится в компоненте app в виде toDoItemSet -->
+<!-- В компоненте TodoList он хранится в переменной todoItemsArr -->
+<!-- Здесь мы пробрасываем массив тудушек из компонента Todo в компонент TodoList.todoItemsArr -->
+<todo-list [todoItemsArr]="toDoItemSet"></todo-list>
+
+<!-- Пример вызова 'директивы', т.е. другого компонента (с пробросом в нее параметра toDoItemSet) -->
+<!-- Вторая фишка связана с случаем, когда ИЗ 'директивы' приходит ивент и обрабатывается в everyFiveSecondsHandler() -->
+<!--Старый вариант (когда массив тудушек хранился в компоненте App)-->
+<!--<todo-form [toDoItems]="toDoItemSet" (every5sec)="everyFiveSecondsHandler($event)" (createItem)="addNewItem($event)"></todo-form>-->
+<!--Реализован проброс из TodoComponent.toDoItemSet в TodoForm.toDoItems-->
+<!--И обратный проброс события из TodoForm в обработчик TodoComponent.createItem()-->
+<todo-form></todo-form>

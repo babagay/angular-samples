@@ -1,0 +1,86 @@
+<!--<md-toolbar color="primary">-->
+    <!--<span>GameViewer</span>-->
+    <!--<span class="spacer"></span>-->
+    <!--<button md-icon-button [mdMenuTriggerFor]="menu">-->
+        <!--<md-icon>more_vert</md-icon>-->
+    <!--</button>-->
+<!--</md-toolbar>-->
+
+<md-toolbar color="primary">
+
+    <span>MyCompany</span>
+    <span class="example-spacer"></span>
+    <button md-button [mdMenuTriggerFor]="appMenu"><md-icon>menu</md-icon> Menu</button>
+
+</md-toolbar>
+
+<md-menu #appMenu="mdMenu">
+    <button md-menu-item> Settings </button>
+    <button md-menu-item> Help </button>
+</md-menu>
+
+<nav>
+    <a [routerLink]=" ['./'] "
+       routerLinkActive="active" [routerLinkActiveOptions]= "{exact: true}">
+        {{ titleIndex }}
+    </a>
+    <a [routerLink]=" ['./home'] "
+       routerLinkActive="active" [routerLinkActiveOptions]= "{exact: true}">
+        {{ titleHome }}
+    </a>
+    <a [routerLink]=" ['./detail'] "
+       routerLinkActive="active" [routerLinkActiveOptions]= "{exact: true}">
+        {{ titleDetail }}
+    </a>
+    <a [routerLink]=" ['./barrel'] "
+       routerLinkActive="active" [routerLinkActiveOptions]= "{exact: true}">
+        Barrel
+    </a>
+    <a [routerLink]=" ['./about'] "
+       routerLinkActive="active" [routerLinkActiveOptions]= "{exact: true}">
+        About
+    </a>
+</nav>
+
+<main>
+    <router-outlet></router-outlet>
+</main>
+
+<pre class="app-state">this.appState.state = {{ appState.state | json }}</pre>
+
+<div class="flex-container">
+    <md-card class="example-card" *ngFor="let data of (myData ? myData.slice(0,10): []); let i = index">
+
+        <img md-card-image src="{{ data.url }}">
+        <md-card-header>
+            <md-card-title>{{ data.title }}</md-card-title>
+        </md-card-header>
+
+        <md-card-actions>
+            <button md-button>LIKE</button>
+            <button md-button>SHARE</button>
+        </md-card-actions>
+
+    </md-card>
+</div>
+
+<!-- -------------------------------------------------- -->
+
+<todo></todo>
+
+<!--2-way binding-->
+<!--<input type="text" [(ngModel)]="foo">{{foo}}-->
+
+
+
+
+<br><br><br><br>
+
+<footer>
+    <span>WebPack Angular 2 Starter by <a [href]="url">@AngularClass</a></span>
+    <div>
+        <a [href]="url">
+            <img [src]="angularclassLogo" width="25%">
+        </a>
+    </div>
+</footer>
