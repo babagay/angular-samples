@@ -140,6 +140,8 @@ function customDecorator<T extends {new(...args:any[]):{}}>(constructor?: T){
 // @customDecorator
 export class TodoFormComponent implements OnInit {
 
+    test:boolean = false;
+
     // пробросить что-то в компонент
     @Input()
     toDoItems:todoItemInterface[]

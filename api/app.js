@@ -19,14 +19,15 @@ app.use(bodyParser.json()); // support json encoded bodies
 
 
 MongoClient.connect('mongodb://localhost:27017/todo', (err, db) => {
-    if (err)
-        return console.log(err)
+    if (err){
+        return console.log(err);
+    }
 
     require('./routes')(app, db);
 
-    app.listen(port, function () {
-        console.log('Example app listening on port ' + port );
-    });
+app.listen(port, function () {
+    console.log('Example app listening on port ' + port );
+});
 
 
 });

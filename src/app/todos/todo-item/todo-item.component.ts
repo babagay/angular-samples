@@ -6,6 +6,7 @@ import {MessageService} from "../../shared/message.service";
 
 
 @Component({
+    // selector: '.todo-item',
     selector:'todo-item',
     // moduleId:'todoItem',
     styleUrls:[

@@ -20,7 +20,31 @@ ___
   </a>
 </p>
 
-# Angular4 Webpack Starter [![Join Slack](https://img.shields.io/badge/slack-join-brightgreen.svg)](https://angularclass.com/slack-join) [![Join the chat at https://gitter.im/angularclass/angular2-webpack-starter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/angularclass/angular2-webpack-starter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# Sample app based on Angular4 Webpack Starter [![Join Slack](https://img.shields.io/badge/slack-join-brightgreen.svg)](https://angularclass.com/slack-join) [![Join the chat at https://gitter.im/angularclass/angular2-webpack-starter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/angularclass/angular2-webpack-starter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) + Node JS + Mongo DB
+
+[запуск фронта] 
+<div>npm run server:dev:hmr</div>
+<br>
+<div> 
+<p>или через алиас</p>
+<p>npm run start:hmr</p>
+</div>
+
+<br>
+<div> 
+<p>[запуск ноды]</p>
+<p>npm run dev</p>
+</div>
+
+<br>
+<br>MongoDB install
+<br>https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/
+
+<br>
+<br>Mongo docs
+<br>http://www.w3ii.com/ru/mongodb/mongodb_data_modeling.html
+<br>https://docs.mongodb.com/manual/reference/method/db.collection.find/
+
 
 
 > An Angular starter kit featuring [Angular 4](https://angular.io), [Ahead of Time Compile](https://angular.io/docs/ts/latest/cookbook/aot-compiler.html), [Router](https://angular.io/docs/ts/latest/guide/router.html), [Forms](https://angular.io/docs/ts/latest/guide/forms.html),
