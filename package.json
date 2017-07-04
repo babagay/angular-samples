@@ -96,7 +96,9 @@
     "lodash": "^4.17.4",
     "mongodb": "^2.2.29",
     "reflect-metadata": "^0.1.10",
-    "rxjs": "~5.0.2",
+    "request": "^2.81.0",
+    "rx-http-request": "^1.2.0",
+    "rxjs": "^5.0.3",
     "typescript": "^2.3.4",
     "yargs": "^8.0.2",
     "zone.js": "0.8.5"

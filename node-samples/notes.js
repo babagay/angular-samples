@@ -101,6 +101,12 @@ var getNote = function () {
  * node node-samples/notes -h
  */
 
+// todo доработать, чтобы брать команду и ключи из consoleArgs
+const consoleArgs = argv.getHelp()
+
+// console.log(consoleArgs['addNote'], "aaaa")
+// console.log(consoleArgs['a'], "vvvvvv")
+
 switch( argv.getFirstArg() ){
     case 'addNote':
         json.addNote( getNote() )
@@ -112,7 +118,7 @@ switch( argv.getFirstArg() ){
 }
 
 
-argv.getHelp()
+
 
 
 

@@ -66,7 +66,7 @@ var getCommand = function () {
  * [!] Здесь можно добавлять кучу опций, а также обработчики каждой команды, но как это делать не понятно, т.к. даже на сайте yargs на данный момент дока не актуальная
  */
 var getHelp = function () {
-    yargs
+      return yargs
         .options({
             a: {
                 alias: "addNote",
