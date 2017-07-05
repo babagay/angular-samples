@@ -1,14 +1,22 @@
 /**
  * [usage]
  * node weather-app\app.js -a "Kharkov, Poltavski shliakh, 52, Ukraine"
+ * node weather-app/app.js -a "kharkov"
  */
-const weather = require('./weather/index')
+
+// 1 - через колбэки
+// 2 - через промисы (axios)
+// const weather = require('./weather') // [1]
+const weather = require('./weather/index-axios') // [2]
+
 const yargs = require('yargs')
 const argv = getArgv()
 
 var address = argv['address'] // var address = argv['a'] - аналогично
 
-weather.getWeather( address )
+// Если getWeather() возвращает цепочку промисов с блоком catch, тогда здесь catch() не нужен
+// Однако, если здесь его убрать, могут быть варнинги о том, что он нужен :)
+weather.getWeather( address ).catch( err => console.log('Error caught in app.js',err) );
 
 // -----------------------------
 
@@ -18,7 +26,7 @@ function getArgv() {
         a: {
             demand: true,
             alias: 'address',
-            describe: 'Address to fetch weather for',
+            describe: 'Address to fetch weath er for',
             string: true
         }
     })

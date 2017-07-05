@@ -50,7 +50,15 @@ var fetchWeatherWithPromise = (lat, long) => {
     return promise;
 }
 
+const axios = require('axios')
+
+// Вариант с промисом через axios
+var fetchWeatherWithPromiseAxios = (lat, long) => {
+    return axios.get(`https://api.darksky.net/forecast/9c7eb311198919629135222590f01008/${lat},${long}?units=si&lang=ru`)
+}
+
 module.exports = {
     getLocalWeather: fetchWeather,
-    fetchWeatherWithPromise // поле и метод называются одинаково
+    fetchWeatherWithPromise, // поле и метод называются одинаково
+    fetchWeatherWithPromiseAxios
 }

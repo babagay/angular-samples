@@ -1,8 +1,12 @@
+/**
+ * Weather App, построенное на колбэках
+ */
+
 const geocode = require('./../geocode/geocode')
 const forecast = require('./../forecast/darksky')
 
 var getWeather = (address) => {
-    console.log(address)
+
     geocode.geocodeAddress(
         address,
         (err, res, body) => {

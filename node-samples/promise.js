@@ -12,10 +12,27 @@ var promise = new Promise( (resolve, reject) => {
 
 const geocode = require('../weather-app/geocode/geocode')
 const forecast = require('../weather-app/forecast/darksky')
+const StackTrace = require('stacktrace-js')
 
-var address = "Харьков, Украина"
+var address = "Харьков, Украина";
 
-geocode.fetchAddrWithPromise(address).then( res => {
+// Fixme: Unhandled promise rejections are deprecated.
+// Где-то не стоит return
+
+// [1]
+StackTrace.generateArtificially().then( () => {
+    return geocode.fetchAddrWithPromise(address);
+})
+
+ // [2]
+ // geocode.fetchAddrWithPromise(address)
+
+     // Примитивный промис
+     // ( () => {
+     //     return new Promise( (res, rej) => res({foo:2}) )
+     // } )()
+
+    .then( res => {
 
         /**
          * [Examples]
@@ -31,7 +48,10 @@ geocode.fetchAddrWithPromise(address).then( res => {
             latitude: res.body.results[0].geometry.viewport.northeast.lat,
             longitude: res.body.results[0].geometry.viewport.northeast.lng
         }
-    },
+    }
+    /*
+    // [!] Так лучше не делать - для этого есть catch(). И, тогда , туда долетает объект err
+    ,
     (err) => {
         // console.log('ERR', err.error.code)
         // console.log('ERR')
@@ -45,14 +65,16 @@ geocode.fetchAddrWithPromise(address).then( res => {
         // [!] вот так можно телепортироваться прямо в блок catch
         // Но (!) объект err до туда не долетает
         throw new Error( err )
-    })
-    .then( data => {
+    }
+    */
+    )
+    .then( data =>
 
         // [!] Функция fetchWeatherWithPromise() должна возвращать промис
         // [!] обязательно пробрасываем промис дальше по цепочке
 
-        return forecast.fetchWeatherWithPromise(data.latitude, data.longitude)
-    })
+        forecast.fetchWeatherWithPromise(data.latitude, data.longitude)
+    )
     .then( res => {
 
         // Финальная обработка результата
@@ -65,8 +87,8 @@ geocode.fetchAddrWithPromise(address).then( res => {
         // Здесь ловятся ошибки из всех then
         // [?] Как определить, в каком именно блоке возникла ошибка. Есть ли тут stackTrace?
 
-
-
         console.log('Catch triggered', JSON.stringify(err, undefined, 2) )
 
+        // Не работает: Cannot parse given Error object
+        // StackTrace.fromError(err).then(console.log)
     });

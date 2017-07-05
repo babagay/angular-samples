@@ -21,7 +21,7 @@ var fetchAddress = ($shortAddress, afterRequest ) => {
 }
 
 /**
- * Вариант с промисом
+ * Вариант с промисом (кастомная обёртка)
  * @param address
  */
 var fetchAddrWithPromise = (address) => {
@@ -31,7 +31,7 @@ var fetchAddrWithPromise = (address) => {
     var promise = new Promise( (resolve, reject) => {
         request(
             {
-                url: `https://maps.googleapiscom/maps/api/geocode/json?address=${encodedAddress}&key=AIzaSyCKUyGel7qnc1-zhDMRxo0d1I_7_KE-bEI`,
+                url: `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=AIzaSyCKUyGel7qnc1-zhDMRxo0d1I_7_KE-bEI`,
                 json: true
             },
             (error, result, body) => {
@@ -53,7 +53,6 @@ var fetchAddrWithPromise = (address) => {
                     })
 
                 } else {
-
                     reject({
                         error,
                         result
@@ -67,8 +66,20 @@ var fetchAddrWithPromise = (address) => {
 
 }
 
+const axios = require('axios')
+
+/**
+ * Вариант с промисом (использован Axios)
+ */
+var fetchAddressWithPromiseAxios = (address) => {
+
+    var encodedAddress = encodeURIComponent(address)
+
+    return axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=AIzaSyCKUyGel7qnc1-zhDMRxo0d1I_7_KE-bEI`)
+};
 
 module.exports = {
     geocodeAddress: fetchAddress,
-    fetchAddrWithPromise
+    fetchAddrWithPromise,
+    fetchAddressWithPromiseAxios
 }
