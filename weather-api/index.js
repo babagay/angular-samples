@@ -90,7 +90,9 @@ hbs.registerHelper('toList', list => {
 
 
 
-const port = 8081
+const weatherCustomPort = 8081
+const port = process.env.PORT || weatherCustomPort
+
 
 require('./routes')(app,pug)
 
