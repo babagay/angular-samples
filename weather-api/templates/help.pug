@@ -1,0 +1,22 @@
+doctype html
+html(lang="en")
+    head
+        title= 'Help'
+        script(type='text/javascript').
+            foo= #{foo};
+            bar= #{bar};
+            if (foo)
+                console.log( bar(1 + 5) );
+                // Не работает JS-код при рендеринге (выдает NaN), хотя после рендеринга bar() работает в консоли браузера: bar(1,4) выдает 5
+    body
+        h1 Pug - node template engine
+        p Hello, #{name}!
+
+        #container.col
+            if youAreUsingPug
+                p You are amazing
+            else
+                p Get on it!
+        p.
+            Pug is a terse and simple templating language with a
+            strong focus on performance and powerful features.

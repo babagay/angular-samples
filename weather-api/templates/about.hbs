@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    {{> header }}
+<body>
+
+    <h3>About Page</h3>
+
+    <p>Hello, {{ toUpper name }}</p>
+
+    <p>Вызов хелпера toList</p>
+    {{#if showList }}
+
+        <div>Вывод списка в цикле</div>
+        <ul>
+            {{#each list}}
+                <li>{{this}}</li>
+            {{/each}}
+        </ul>
+
+        <div>Вывод через хелпер</div>
+        {{  toList list }}
+    {{/if}}
+
+
+    {{> footer }}
+
+
+
+</body>
+</html>
