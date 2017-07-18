@@ -126,7 +126,7 @@ angular2-webpack-starter/
  ├──config/                        * our configuration
  |   ├──helpers.js                 * helper functions for our configuration files
  |   ├──spec-bundle.js             * ignore this magic that sets up our Angular testing environment
- |   ├──karma.conf.js              * karma config for our unit tests
+ |   ├──karma.conf.js.example              * karma config for our unit tests
  |   ├──protractor.conf.js         * protractor config for our end-to-end tests
  │   ├──webpack.dev.js             * our development webpack config
  │   ├──webpack.prod.js            * our production webpack config
