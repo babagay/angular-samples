@@ -63,4 +63,27 @@ module.exports = function (app,pug) {
         res.send(html)
     });
 
+    app.get('/plain-text-test', (req, res) => {
+
+        res
+            .send(
+            'Hello world!'
+            )
+    });
+
+    app.get('/plain-text-test-not-found', (req, res) => {
+
+        res
+            .status(404)
+            .send({
+                error: 'Not found'
+            })
+    });
+
+    app.get('/json-test', (req, res) => {
+
+        res.send(
+            {foo:"hello", bar: "world"}
+            )
+    });
 };

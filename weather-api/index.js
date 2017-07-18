@@ -99,3 +99,6 @@ require('./routes')(app,pug)
 app.listen(port, () => {
     console.log('app listening on port ' + port );
 });
+
+// Для тестирования пробрасываем app наружу
+module.exports.app = app;

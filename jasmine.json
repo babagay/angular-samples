@@ -1,0 +1,22 @@
+{
+  "spec_dir": "../../specs",
+
+  "spec_files": [
+    "*/[sS]pec.js",
+    "core/**/*.js",
+    "console/**/*.js",
+    "npmPackage/**/*.js"
+  ],
+
+  "helpers": [
+    "helpers/*/.js",
+    "helpers/asyncAwait.js",
+    "helpers/checkForSet.js",
+    "helpers/checkForMap.js",
+    "helpers/nodeDefineJasmineUnderTest.js"
+  ],
+
+  "stopSpecOnExpectationFailure": false,
+
+  "random": false
+}
