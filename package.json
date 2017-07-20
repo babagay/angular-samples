@@ -107,6 +107,7 @@
     "pug": "^2.0.0-rc.2",
     "reflect-metadata": "^0.1.10",
     "request": "^2.81.0",
+    "rewire": "^2.5.2",
     "rx-http-request": "^1.2.0",
     "rxjs": "^5.0.3",
     "stacktrace-js": "^2.0.0",

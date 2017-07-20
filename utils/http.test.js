@@ -29,6 +29,8 @@ const expect = require('expect')
 // describe - для группировки и структурирования тестов
 describe('GET html', function() {
     it('should return a test help page with html', (done) => {
+
+        // Метод request() выполняет функцию createServer()
         request(app)
             .get('/help')
             .set('Accept', 'application/html')
