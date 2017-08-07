@@ -49,10 +49,10 @@ app.use( (req, res, next) => {
     var strLogging = `${now} ${req.method} ${req.url} \n`
 
     // [!] Чтобы не было варнинга, нужно добавить колбэк, обрабатывающий ошибку
-    fs.appendFile('log.txt', strLogging, err => {
-       if(err)
-           console.log('Can not log info in middleware')
-    });
+    // fs.appendFile('log.txt', strLogging, err => {
+    //    if(err)
+    //        console.log('Can not log info in middleware')
+    // });
 
     next();
 });

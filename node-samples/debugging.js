@@ -10,6 +10,11 @@
  * @type {{id: number, title: string, flag: boolean}}
  *
  * Выход: ^-C 2 раза
+ *
+ * [!] Запуск в режиме отладки через хром
+ * node --inspect-brk node-samples/debugging
+ * После этого открыть в хроме chrome://inspect/#devices и кликнуть inspect на нужном дивайсе
+ * Breakpoint ставится в коде командой debugger;
  */
 
 var testObj = {
