@@ -9,12 +9,6 @@ const port = 8004
 // }
 
 
-
-
-
-
-
-
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -26,6 +20,7 @@ app.listen(port, function () {
     console.log('Example app listening on port ' + port );
 });
 
-
+// Для тестирования пробрасываем app наружу
+module.exports.app = app;
 
 

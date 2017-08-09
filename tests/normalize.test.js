@@ -1,6 +1,8 @@
 // First argument to 'describe' (which is defined by Jasmine) is the testing module that will
 // appear in test reports. The second argument is a callback containing the individual tests.
 
+let expect = require('expect')
+
 var normalizer = require('../utils/normalize')
 
 describe("normalizeData", function () {

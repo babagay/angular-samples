@@ -2,9 +2,9 @@
  * Тестирование http-запросов
  *
  * Использованы пакеты:
- * mocha(?)
- * supertest
- * expect
+ * mocha(?) - не использован
+ * supertest - для генерации запросов к тестовому приложению
+ * expect - для дополнительных проверок полученного в ответ объекта
  *
  * @see https://github.com/visionmedia/supertest
  * @see https://github.com/mjackson/expect
@@ -18,16 +18,19 @@
  * Добавляем тесты
  * Наблюдаем результат в реальном времени (триггер для ребилдинга - Ctrl+S либо клик в Терминал)
  *
+ * [!] Запуск тестов: Alt-Shift-R
+ *
  * @type {any}
  */
 
 const request = require('supertest')
-const app = require('../weather-api').app
+// const app = require('../weather-api').app // OK
+const {app} = require('../weather-api')
 const expect = require('expect')
 
 
 // describe - для группировки и структурирования тестов
-describe('GET html', function() {
+describe('Http testing', function() {
     it('should return a test help page with html', (done) => {
 
         // Метод request() выполняет функцию createServer()
@@ -72,7 +75,7 @@ describe('GET html', function() {
     });
 });
 
-describe('GET json', function() {
+describe('Http json testing', function() {
     describe('Simple json test', () => {
         it('should return a json', (done) => {
             request(app)
@@ -120,6 +123,10 @@ describe('GET json', function() {
                 .expect( 404 )
                 .expect( validateErrorResponseStructure )
                 .expect( validateErrorResponseContent )
+                .expect( res => {
+                    expect( res.body.error ).toBe('Not found')
+                    expect( res.headers['x-powered-by'] ).toBe('Express')
+                })
                 .end(done)
             ;
         });
@@ -134,6 +141,8 @@ var validateErrorResponseStructure = res => {
 // Здесь expect - это функция из библиотки expect
 var validateErrorResponseContent = res => {
 
+    let validErrorMess = 'Not found'
+
     // Использование внутреннего экспекта вместо конструкции
     // if( res.body.error != 'Not found' )
     //     return done( new Error('Should be the message "Not found" but [' + res.body.error + '] got') )
@@ -141,6 +150,6 @@ var validateErrorResponseContent = res => {
     // const expect = require('expect')
     // Сигатура: expect(object).toInclude(value, [comparator], [message])
     expect(res.body).toInclude({
-        error: 'Not found'
-    }, 'Should be the message "Not found" but [' + res.body.error + '] got');
+        error: validErrorMess
+    }, `Should be the message [${validErrorMess}] but [${res.body.error}] got`);
 }

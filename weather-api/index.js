@@ -97,7 +97,7 @@ const port = process.env.PORT || weatherCustomPort
 require('./routes')(app,pug)
 
 app.listen(port, () => {
-    console.log('app listening on port ' + port );
+    console.log('Weather app is listening on port ' + port + "\n");
 });
 
 // Для тестирования пробрасываем app наружу

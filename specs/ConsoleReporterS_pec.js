@@ -1,3 +1,5 @@
+let jasmineUnderTest = require('karma-jasmine');
+
 describe("ConsoleReporter", function() {
     var out;
 

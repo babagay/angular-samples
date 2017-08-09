@@ -1,3 +1,9 @@
+/**
+ * Perform a connection to mongoDB
+ *
+ * @type {any}
+ */
+
 const mongoose = require('mongoose');
 
 const dbName = 'todoApp'

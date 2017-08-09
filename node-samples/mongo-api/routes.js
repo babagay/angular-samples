@@ -1,70 +1,63 @@
 
-// [?] Object destructuring example
-var {mongoose} = require('./connection');
+// Object destructuring example
+let {mongoose} = require('./connection');
 
 // var Todo = require('./models/todo'); - можно так
-var {Todo} = require('./models/todo');
+let {Todo,add:addTodo,getAll:getAllTodos,getOne:getOneTodo} = require('./models/todo'); // создаст переменную Todo со значением из поля Todo подключаемого объекта
+
+let {User,addUser,dropUser,updateUser,getUser,getAll:getAllUsers} = require('./models/user');
 
 
-var User = require('./models/user');
-
-// fixme так не работает
-var errorHandler = (e,res) => {
-    console.log(e)
-    var mess = e.message || e
-    res.status(400)
-    res.send({'error': mess})
-}
 
 module.exports = (app) => {
 
-    app.get('/todo', function (req, res) {
+    // GET todos
+    app.get('/todo',   (req, res) =>
+        getAllTodos(req,res)
+    );
 
-        // var title = "Second"
-        // Todo.find({ title: title })
-
-        Todo.find({ }).exec().then( r => {
-            console.log(r, `FIND ${title}`)
-            res.send( JSON.stringify(r) )
-        }).catch( e => {
-            console.log(e)
-            var mess = e.message || e
-            res.status(400)
-            res.send({'error': mess})
-        });
-
-    });
+    app.get('/todo/:id',   (req, res) =>
+        getOneTodo(req,res)
+    );
 
     /**
      * В постмане выставить Raw во вкладке Body
      * И выбрать в выпадающем списке JSON(application/json)
      * [example]
      *  {
-     *       "id": "4",
+     *       "id": 4,
      *       "title": "Fourth",
      *       "completedAt": null
      *  }
+     *
+     *  Также, можожно использовать x-www-form-urlencoded
      */
-    app.post('/todo', (req,res) => {
+    app.post('/todo', (req,res) =>
+        addTodo(req,res)
+    );
 
-        var newTodoItem = new Todo({
-            id: req.body.id,
-            title: req.body.title,
-            completedAt: req.body.completedAt
-        });
+    // GET Users
+    app.get('/user', (req, res) =>
+        getAllUsers(req,res)
+    );
 
-        newTodoItem.save().then( doc => {
-            console.log(doc,"newTodoItem saved")
-            res.status(200)
-            res.send({
-                doc: doc
-            })
-        }).catch( e => {
-            console.log(e)
-            var mess = e.message || e
-            res.status(400)
-            res.send({'error': mess})
-        } );
-    });
+    app.get('/user/:id', (req,res) =>
+        getUser(req,res)
+    );
+
+    app.post('/user', (req,res) =>
+        addUser(req,res)
+    );
+
+    app.delete('/user/:id', (req,res) =>
+        dropUser(req,res)
+    );
+
+    app.put('/user/:id', (req,res) =>
+        updateUser(req,res)
+    );
+
+    // [!] метод view не сработал
 
 };
+

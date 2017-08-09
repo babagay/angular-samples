@@ -1,3 +1,11 @@
+/**
+ * Примитивные функции для обкатки различных вариантов тестирования
+ *
+ * @param a
+ * @param b
+ * @returns {*}
+ */
+
 var foo = (a,b) => {
     return a + b
 }
@@ -84,6 +92,8 @@ module.exports = (() => {
         }, 19)
     };
 
+    var multiply = (a,b) => a*b;
+
     return {
         sum: _summ,
         square: _square,
@@ -91,5 +101,6 @@ module.exports = (() => {
         setName: _setName,
         asyncFunc: asyncFunction,
         asyncFuncSquare: _asyncFuncSquare,
+        multiply
     }
 })();

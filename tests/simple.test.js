@@ -1,34 +1,17 @@
 /**
+ * Копия файла utils/utils.test.js, но данный экземпляр запускается через карму
  *
- * it - эту функцию обеспечивает Mocha
- * expect  эту функцию поставляет библиотека Expect
- *
- * [package.json]
- *       "testing": "mocha utils/*.test.js",
- *       "testing": "mocha ** /*.test.js",  (без пробела после **)
- *       "testing-watch": "D:\\projects\\angular-starter\\node_modules\\.bin\\nodemon --exec npm run testing",
- *       or
- *       "testing-watch": "D:\\projects\\angular-starter\\node_modules\\.bin\\nodemon --exec npm \"run testing\"",
- *
- * [run]
- *      node utils/utils.test
- *      npm run testing
- *      npm run-script testing
- *      D:\projects\angular-starter\node_modules\.bin\nodemon --exec npm run testing
- *      npm run testing-watch
- *
- * [@link]
- *      https://github.com/mjackson/expect
+ * [!] запуск http-тестов через карму не прошёл
  */
 
 const expect = require('expect')
 
-const utils = require('./utils')
+const utils = require('../utils/utils')
 
-describe('Simple test samples from utils folder', () => {
+describe('Simple tests', () => {
 
 
-    it('Should summ two nums',
+    it('Should summ two nums+',
         () => {
             let realVal = utils.sum(3, 17);
 

@@ -1,3 +1,5 @@
+let expect = require('expect')
+let jasmineUnderTest = require('karma-jasmine');
 
 
 describe('Printing a big object', function(){

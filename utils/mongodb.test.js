@@ -2,6 +2,8 @@
  * Тест CRUD-операций с базой
  * Если коллекции нет, она будет создана
  *
+ * Использован assert
+ *
  * @see https://github.com/mongodb/node-mongodb-native
  * @see https://docs.mongodb.com/manual/reference/method/db.collection.deleteMany/#db.collection.deleteMany
  */
