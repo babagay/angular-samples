@@ -2,12 +2,13 @@
  * Тестирование http-запросов
  *
  * Использованы пакеты:
- * mocha(?) - не использован
+ * mocha
  * supertest - для генерации запросов к тестовому приложению
- * expect - для дополнительных проверок полученного в ответ объекта
+ * expect - в качестве assertion library для дополнительных проверок полученного в ответ объекта
  *
  * @see https://github.com/visionmedia/supertest
  * @see https://github.com/mjackson/expect
+ * @see https://mochajs.org
  *
  * [!] Запускать сервер (команда: node weather-api) не нужно - supertest (или mocha) запускают его самостоятельно, а потом гасят
  * Если сервер был запущен, мока ругается: "Error: listen EADDRINUSE :::8081"
@@ -20,14 +21,62 @@
  *
  * [!] Запуск тестов: Alt-Shift-R
  *
- * @type {any}
+ * [!] Использовать xit() вместо it() - отключить тест
+ *
+ * Тестировать 404-ю через supertest удобнее, чем через chai
+ *
+ * [!] В package.json в скрипте testing можно писать EXPORT NODE_ENV=test || SET NODE_ENV=test && mocha utils/test.js
  */
+
+process.env.NODE_ENV = 'test'; // Можно устанавливать окруженеи вручную
 
 const request = require('supertest')
 // const app = require('../weather-api').app // OK
 const {app} = require('../weather-api')
+const {app:todoApp} = require('../node-samples/mongo-api/server') // fixme: почему-то не работает с файлом server.test.js
 const expect = require('expect')
+const {ObjectID} = require('mongodb')
+const {Todo} = require('../node-samples/mongo-api/models/todo.js')
 
+var mockTodo = new Todo({
+    _id: new ObjectID(),
+    id: 777,
+    title: "mock TODO item",
+    completed: true,
+    completedAt: null
+});
+
+var mockObjId = mockTodo._id
+
+describe('hooks', function() {
+
+    before(function() {
+        // runs before all tests in this block
+        // [!] Объект не сохраняется при запуске тестов из консоли - по какой-то причине не отрабатывает блок before
+        // Сюда заходит только при использовании запуска через сущность, созданную в инструменте Run -> Mocka с юзер-интерфейсом qunit
+        // @see http://mochajs.org/#interfaces
+
+        mockTodo.save().then( doc => {
+
+        }).catch( e => {
+
+        } );
+    });
+
+    after(function() {
+        // runs after all tests in this block
+    });
+
+    beforeEach(function() {
+        // runs before each test in this block
+    });
+
+    afterEach(function() {
+        // runs after each test in this block
+    });
+
+    // test cases
+});
 
 // describe - для группировки и структурирования тестов
 describe('Http testing', function() {
@@ -111,6 +160,7 @@ describe('Http json testing', function() {
         });
     });
 
+    // Здесь один expect помещен внутри другого
     describe('Error testing', () => {
         // Вариант, когда валидация перенесена из end() в expect()
         // и разделена на 2 этапа
@@ -130,6 +180,103 @@ describe('Http json testing', function() {
                 .end(done)
             ;
         });
+    });
+});
+
+
+
+describe('Todo api testing', () => {
+    it('should return 404 with message "id is invalid"', done => {
+
+       let wrongId = "asd"
+
+       request( todoApp )
+           .get( `/todo/${wrongId}` )
+           .expect( 404 )
+           .expect( res => {
+                expect( res.body.error ).toBe( 'Id is invalid' )
+           })
+           .end( done );
+    });
+
+    it('should return 404 with "Not found" message', done => {
+
+       let wrongId = new ObjectID()
+
+       request( todoApp )
+           .get( `/todo/${wrongId}` )
+           .expect( 404 )
+           .expect( res => {
+                expect( res.body.error ).toBe( `Document [${wrongId}] not found` )
+           })
+           .end( done );
+    });
+
+    it('should update todo', done => {
+
+       let title = "Changed title"
+
+       let changedTodo = Object.create(mockTodo)
+
+        changedTodo.title = title
+        changedTodo._id = mockObjId
+
+       request( todoApp )
+           .patch( `/todo/` )
+           .send(changedTodo)
+           .expect( 200 )
+           .expect( res => {
+               expect( res.body.doc.title ).toBe( title )
+               expect( res.body.doc.completedAt ).toBeA( 'number' )
+           })
+           .end( done );
+    });
+
+    it('should not update todo with invalid _id', done => {
+
+       let title = "Changed title+"
+
+       let changedTodo = Object.create({title:'ASD'}) // [?] когда тут стояло mockTodo, отваливался следующий тест
+
+        changedTodo._id = '598d72566306ff10b410be59+'
+
+        changedTodo.title = title
+
+       request( todoApp )
+           .patch( `/todo/` )
+           .send(changedTodo)
+           .expect( 400 )
+           .expect( res => {
+
+           })
+           .end( done );
+    });
+
+    it('should delete todo and return 200', done => {
+
+       // let id = mockTodo._id.toHexString() // not work
+       let id = mockTodo._id
+
+       request( todoApp )
+           .del( `/todo/${id}` )
+           .expect( 200 )
+           .expect( res => {
+               expect( res.body.message ).toBe( `Item successfully deleted!` )
+           })
+           .end( done );
+    });
+
+    it('should return 404 if todo not found', done => {
+
+       let id = new ObjectID()
+
+       request( todoApp )
+           .del( `/todo/${id}` )
+           .expect( 404 )
+           .expect( res => {
+               expect( res.body.message ).toBe( `Todo item was not deleted!` )
+           })
+           .end( done );
     });
 });
 

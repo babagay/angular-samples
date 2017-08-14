@@ -59,7 +59,7 @@
     "test": "npm run lint && karma start",
     "testing": "mocha utils/*.test.js",
     "testing-watch": "D:\\projects\\angular-starter\\node_modules\\.bin\\nodemon --exec npm run testing",
-    "testing-jasmine": "node_modules/.bin/jasmine",
+    "testing-jasmine": "node_modules/.bin/jasmine  --config=config/jasmine.json",
     "jasmine-node": "D:\\projects\\angular-starter\\node_modules\\.bin\\jasmine-node --verbose specs",
     "tslint": "tslint",
     "typedoc": "typedoc",

@@ -1,7 +1,26 @@
+/**
+ * [Heroku]
+ * Нужна конструкция process.env.PORT
+ * Нужна запись start в секции scripts в package.json
+ * запись node в секции engines в package.json
+ * В файле подключения к базе использовать process.env.MONGODB_URI
+ *
+ * @type {any}
+ */
+let env = 'development'
+const environment = process.env.NODE_ENV || env // Можно устанавливать окруженеи вручную
+
 const express = require('express');
 const bodyParser = require('body-parser')
 
-const port = 8004
+// for dev environment by default
+let prt = 8004
+
+// запускать приложение на другом порту для тестов (на случай, если основное приложение уже запущено)
+if( environment == 'test' )
+    prt = 8085
+
+const port = process.env.PORT || prt
 
 // const cors = require('cors')
 // const corsOptions = {

@@ -40,6 +40,12 @@ let User = mongoose.model('User',SchemaUser);
 
 // CRUD ----
 
+/**
+ * [!] Магия: работает без приведения _id к объекту (new ObjectID(req.params.id))
+ *
+ * @param req
+ * @param res
+ */
 function dropUser(req, res) {
     User.remove({_id: req.params.id}).then( (r) => {
 

@@ -3,7 +3,7 @@
 let {mongoose} = require('./connection');
 
 // var Todo = require('./models/todo'); - можно так
-let {Todo,add:addTodo,getAll:getAllTodos,getOne:getOneTodo} = require('./models/todo'); // создаст переменную Todo со значением из поля Todo подключаемого объекта
+let {Todo,add:addTodo,getAll:getAllTodos,getOne:getOneTodo,drop:deleteTodo,updateObject:upTodo,up:upTodoById} = require('./models/todo'); // создаст переменную Todo со значением из поля Todo подключаемого объекта
 
 let {User,addUser,dropUser,updateUser,getUser,getAll:getAllUsers} = require('./models/user');
 
@@ -16,8 +16,9 @@ module.exports = (app) => {
         getAllTodos(req,res)
     );
 
-    app.get('/todo/:id',   (req, res) =>
-        getOneTodo(req,res)
+    app.get('/todo/:id',   (req, res) => {
+            getOneTodo(req,res)
+        }
     );
 
     /**
@@ -34,6 +35,18 @@ module.exports = (app) => {
      */
     app.post('/todo', (req,res) =>
         addTodo(req,res)
+    );
+
+    app.delete('/todo/:id', (req,res) =>
+        deleteTodo(req,res)
+    );
+
+    app.put('/todo/:id', (req,res) =>
+        upTodoById(req,res)
+    );
+
+    app.patch('/todo', (req,res) =>
+            upTodo(req, res)
     );
 
     // GET Users

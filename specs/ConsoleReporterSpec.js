@@ -1,4 +1,13 @@
-let jasmineUnderTest = require('karma-jasmine');
+/**
+ * Тест не работает из-за jasmineUnderTest = undefined
+ */
+
+// let {jasmine,jasmineUnderTest} = require('jasmine')
+//  let {jasmine,jasmineUnderTest} = require('jasmine-core')
+let {jasmine,jasmineUnderTest} = require('jasmine-node')
+
+// не работает
+//let jasmineUnderTest = require('karma-jasmine');
 
 describe("ConsoleReporter", function() {
     var out;

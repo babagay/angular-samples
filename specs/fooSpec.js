@@ -1,6 +1,17 @@
 /**
  * Тестрование через jasmine-node
- * npl run jasmine-node
+ * или через jasmine
+ *
+ * Под мокой запускается, если подключить экспект:
+ * let expect = require('expect')
+ * или жасмин
+ * let {jasmine,jasmineUnderTest} = require('jasmine-node')
+ *
+ * npm run jasmine-node
+ * npm run testing-jasmine
+ *
+ * Выглядит не очень наглядно (нету подсветки). Однако, если запускать из консоли, подсветка появляется (у jasmine-node более наглядно).
+ *
  * Прогоняет все файлы по шаблону specs/*Spec.js
  *
  * https://github.com/jasmine/jasmine

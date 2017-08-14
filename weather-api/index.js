@@ -89,7 +89,7 @@ hbs.registerHelper('toList', list => {
 
 
 
-
+// process.env.PORT - нужно для Heroku
 const weatherCustomPort = 8081
 const port = process.env.PORT || weatherCustomPort
 

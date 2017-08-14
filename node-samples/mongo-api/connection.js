@@ -2,6 +2,12 @@
  * Perform a connection to mongoDB
  *
  * @type {any}
+ *
+ * Можно добавить проверку:
+ * if process.env.NODE_ENV == dev
+ *  process.env.MONGO_URI = mongodb://localhost:27017/todoApp
+ * if process.env.NODE_ENV == test
+ *  process.env.MONGO_URI = mongodb://localhost:27017/todoAppTest
  */
 
 const mongoose = require('mongoose');
