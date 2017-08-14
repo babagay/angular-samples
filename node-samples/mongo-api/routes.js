@@ -59,7 +59,7 @@ module.exports = (app) => {
     );
 
     app.post('/user', (req,res) =>
-        addUser(req,res)
+        addUser(req, res)
     );
 
     app.delete('/user/:id', (req,res) =>

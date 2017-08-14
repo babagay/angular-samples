@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
+const validator = require('validator')
+const {getToken:getJwtToken, getTokenStr:getJwtTokenStr} = require('./../../../utils/jwt')
+const _ = require('lodash')
 
-let SchemaUser = new mongoose.Schema(
+let basicScheme = mongoose.Schema
+
+
+let SchemaUser = new basicScheme(
     {
         name: {
             type: String,
@@ -16,7 +22,35 @@ let SchemaUser = new mongoose.Schema(
         createdAt: {
             type: Number,
             required: false
-        }
+        },
+        email: {
+            type: String,
+            required: false, // вообще, здесь надо true
+            trim: true,
+            minlength: 5,
+            unique: true,
+            validate: {
+                validator: val =>
+                    validator.isEmail(val)
+                ,
+                message: '{VALUE} is not a valid email'
+            }
+        },
+        password: {
+            type: String,
+            required: false, // must be true
+            minlength: 6
+        },
+        tokens: [{
+          access: {
+              type: String,
+              required: false //  must be true
+          },
+          token: {
+                type: String,
+                required: false //  must be true
+            }
+        }]
     },
     {
         versionKey: false
@@ -32,13 +66,57 @@ SchemaUser.pre('save', next => {
         this.createdAt = now.getTime();
     }
 
+    // let userObj = this
+    // getJwtToken({},'asd').then( token => {
+    //         userObj.tokens = {}
+    //         userObj.tokens.access = token
+    //         console.log(token)
+    //         next()
+    //     });
+
     next()
+
 })
 
+// не работает
+// SchemaUser.__proto__.foo = ()=>{}
+
+// Расширяем модель новым методом
+// [!] не используем стрелочную функцию, т.к. нам нужна ссылка на this
+SchemaUser.methods.generateAuthToken = function () {
+    let user = this
+    let access = 'auth'
+    let salt = 'abc123'
+
+    let token = getJwtTokenStr({_id: user._id.toHexString(), access: access},salt)
+
+    user.tokens.push({
+        access,
+        token
+    });
+
+    return user.save().then( () => token );
+}
+
+// OK - закоменчено, чтоб не отваливались тесты
+// [!] Можно переопределить метод toJSON(), чтобы возвращать
+// сокращенный объект юзера
+// SchemaUser.methods.toJSON = function () {
+//     let user = this
+//     let userObj = user.toObject()
+//     return _.pick(userObj,['_id','email'])
+// }
 
 let User = mongoose.model('User',SchemaUser);
 
-// CRUD ----
+// User.foo = () => "-" // OK
+// User.__proto__.foo = () => "+" // OK
+// console.log( User.foo({},'asd') ) // -
+
+// OK, но лучше хранить метод в SchemaUser.methods
+// User.generateAuthToken = getJwtToken // Расширяем модель внешней функцией
+
+
 
 /**
  * [!] Магия: работает без приведения _id к объекту (new ObjectID(req.params.id))
@@ -69,14 +147,23 @@ function dropUser(req, res) {
 
 
 let addUser = (req, res) => {
-    var newTodoItem = new User(req.body);
+    var user = new User(req.body);
 
-    newTodoItem.save().then( doc => {
-        // console.log(doc,"new User saved")
+    user.save().then( () => {
+
+        // после вставки токен-генератора появился еще один then(), в который переехал код res.send()
+        return user.generateAuthToken()
+
+    }).then( token => {
+
+        // после вставки токен-генератора был добавлен заголовок
+        res.header('x-auth',token)
         res.status(200)
+
         res.send({
             message: "Document successfully added!",
-            doc: doc
+            doc: user
+            // doc: user.toJSON() // можно так
         })
     }).catch( e => {
         if( process.env.NODE_ENV !== 'test' )
