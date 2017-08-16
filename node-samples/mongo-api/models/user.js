@@ -1,122 +1,17 @@
+/**
+ * User CRUD methods
+ *
+ * @type {any}
+ */
 const mongoose = require('mongoose');
+const {ObjectID} = require('mongodb')
 const validator = require('validator')
 const {getToken:getJwtToken, getTokenStr:getJwtTokenStr} = require('./../../../utils/jwt')
 const _ = require('lodash')
+const jwt = require('jsonwebtoken')
 
-let basicScheme = mongoose.Schema
-
-
-let SchemaUser = new basicScheme(
-    {
-        name: {
-            type: String,
-            required: true,
-            trim: true,
-            minlength: 3,
-            validate: {
-                validator: val =>
-                    /[\w]{3,120}\W{0,1}\w{0,120}/.test(val),
-                message: '{VALUE} is not a valid name'
-            }
-        },
-        createdAt: {
-            type: Number,
-            required: false
-        },
-        email: {
-            type: String,
-            required: false, // вообще, здесь надо true
-            trim: true,
-            minlength: 5,
-            unique: true,
-            validate: {
-                validator: val =>
-                    validator.isEmail(val)
-                ,
-                message: '{VALUE} is not a valid email'
-            }
-        },
-        password: {
-            type: String,
-            required: false, // must be true
-            minlength: 6
-        },
-        tokens: [{
-          access: {
-              type: String,
-              required: false //  must be true
-          },
-          token: {
-                type: String,
-                required: false //  must be true
-            }
-        }]
-    },
-    {
-        versionKey: false
-    }
-);
-
-// Hook перед операцией сохранения
-// fixme не работает
-SchemaUser.pre('save', next => {
-    now = new Date()
-
-    if(!this.createdAt) {
-        this.createdAt = now.getTime();
-    }
-
-    // let userObj = this
-    // getJwtToken({},'asd').then( token => {
-    //         userObj.tokens = {}
-    //         userObj.tokens.access = token
-    //         console.log(token)
-    //         next()
-    //     });
-
-    next()
-
-})
-
-// не работает
-// SchemaUser.__proto__.foo = ()=>{}
-
-// Расширяем модель новым методом
-// [!] не используем стрелочную функцию, т.к. нам нужна ссылка на this
-SchemaUser.methods.generateAuthToken = function () {
-    let user = this
-    let access = 'auth'
-    let salt = 'abc123'
-
-    let token = getJwtTokenStr({_id: user._id.toHexString(), access: access},salt)
-
-    user.tokens.push({
-        access,
-        token
-    });
-
-    return user.save().then( () => token );
-}
-
-// OK - закоменчено, чтоб не отваливались тесты
-// [!] Можно переопределить метод toJSON(), чтобы возвращать
-// сокращенный объект юзера
-// SchemaUser.methods.toJSON = function () {
-//     let user = this
-//     let userObj = user.toObject()
-//     return _.pick(userObj,['_id','email'])
-// }
-
-let User = mongoose.model('User',SchemaUser);
-
-// User.foo = () => "-" // OK
-// User.__proto__.foo = () => "+" // OK
-// console.log( User.foo({},'asd') ) // -
-
-// OK, но лучше хранить метод в SchemaUser.methods
-// User.generateAuthToken = getJwtToken // Расширяем модель внешней функцией
-
-
+// Создает переменную User и вкидывает в нее UserModel.User
+const {User} = require('./UserModel')
 
 /**
  * [!] Магия: работает без приведения _id к объекту (new ObjectID(req.params.id))
@@ -190,6 +85,33 @@ let getUser = (req, res) => {
     } );
 }
 
+
+
+// С использованием middleware
+let getUserMe = (req, res) => {
+    res.send({'User':res.user})
+}
+
+// OK - Без использования middleware
+// let getUserMe = async (req, res) => {
+//
+//     let token = req.header('x-auth')
+//
+//     if(!token) return res.status(400).json({'error': 'Token must be set in x-auth header'})
+//
+//     let user = await User.findByToken(token)
+//
+//     if(user === null) return res.status(401).json({'error': 'Token is invalid'})
+//
+//     res.status(200).send(
+//         {
+//             'User': user
+//         }
+//     );
+// }
+
+
+
 let updateUser = (req, res) => {
 
     User.findById({_id: req.params.id}).then( doc => {
@@ -225,6 +147,7 @@ module.exports = {
     User,
     addUser,
     getUser,
+    getUserMe,
     dropUser,
     updateUser,
     getAll
