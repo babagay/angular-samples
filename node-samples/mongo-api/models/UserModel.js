@@ -4,6 +4,7 @@ const validator = require('validator')
 const {getToken:getJwtToken, getTokenStr:getJwtTokenStr} = require('./../../../utils/jwt')
 const _ = require('lodash')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 
 let basicScheme = mongoose.Schema
 
@@ -26,7 +27,7 @@ let SchemaUser = new basicScheme(
         },
         email: {
             type: String,
-            required: false, // вообще, здесь надо true
+            required: true, // вообще, здесь надо true
             trim: true,
             minlength: 5,
             unique: true,
@@ -58,26 +59,7 @@ let SchemaUser = new basicScheme(
     }
 );
 
-// Hook перед операцией сохранения
-// fixme не работает
-SchemaUser.pre('save', next => {
-    now = new Date()
 
-    if(!this.createdAt) {
-        this.createdAt = now.getTime();
-    }
-
-    // let userObj = this
-    // getJwtToken({},'asd').then( token => {
-    //         userObj.tokens = {}
-    //         userObj.tokens.access = token
-    //         console.log(token)
-    //         next()
-    //     });
-
-    next()
-
-})
 
 // Добавление статического метода стандартным способом
 SchemaUser.getSalt = function () {
@@ -98,10 +80,18 @@ SchemaUser.methods.generateAuthToken = function () {
 
     let token = getJwtTokenStr({_id: user._id.toHexString(), access: access},salt)
 
+    // При такой схеме токены будут накапливаться
+    // user.tokens.push({
+    //     access,
+    //     token
+    // });
+
+    user.tokens = [];
     user.tokens.push({
-        access,
-        token
-    });
+            access,
+            token
+            // [?] здесь откуда-то берется третьм параметром _id
+        });
 
     return user.save().then( () => token );
 }
@@ -132,7 +122,7 @@ SchemaUser.statics.findByToken = async function (token) {
     try {
         decodedObject = jwt.verify(token, salt);
     } catch (e){
-        return null
+        throw new Error("Token is invalid")
     }
 
     // try {
@@ -148,6 +138,86 @@ SchemaUser.statics.findByToken = async function (token) {
 
     return document
 };
+
+SchemaUser.statics.findByCredentials = async function (email, password) {
+
+  let user = await User.findOne({"email":email})
+
+  let hashedPassword = user.password
+
+  if( !bcrypt.compareSync(password, hashedPassword) ){
+      return false
+      // [!] можно вместо ретурна кидать исключение, но, тогда в клиентском коде
+      //     нужно как-то риличать его от системных исключений
+      // throw new Error("foo")
+  }
+
+  return user
+};
+
+/**
+ * Если в запросе прилетел пароль в виде plain-text, (c "!" на конце) считаем, что юзер хочет изменить пароль
+ * Тогда, нам надо положить в базу хэш этого пароля
+ * Не представляю, как определить, что полученная строка - это именно не хэш, а просто текст, поэтому,
+ * при смене пароля можно добавлять в конец строки некий спец-символ, например, !, который будет однозначно указывать, что имеет место операция смены пароля
+ *
+ * Логика функции: If user.password is plain text return true
+ *
+ * @returns {boolean}
+ */
+SchemaUser.methods.isPasswordModified = function () {
+
+    let userFromRequest = this
+    let userPass = undefined
+
+    try {
+        userPass = userFromRequest.password
+    } catch (e){}
+
+    if( userPass === undefined )
+        return false;
+
+    if( userPass.slice(-1) === '!' )
+        return true
+}
+
+// Hook перед операцией сохранения
+// [!] чтобы корректно отрабатывала ссылка на текущего юзера (this),
+// нужно использовать не стрелочную функцию, а обычную
+SchemaUser.pre('save', function(next) {
+
+    let user = this
+
+    now = new Date()
+
+    // Добавить время сохранения
+    if(!this.createdAt) {
+        user.createdAt = now.getTime();
+    }
+
+    // Захешировать пароль, если он пришел в открытом виде
+    if( user.isPasswordModified() ){
+
+        user.password = user.password.slice(0, -1) // Удалить спецсимвол на конце строки, который говорит о том, что идет смена пароля
+
+        bcrypt.genSalt(10).then( saltGenerated => {
+            let hashGenerated = bcrypt.hashSync(user.password, saltGenerated)
+            user.password = hashGenerated
+            next()
+        })
+
+    } else
+        next();
+
+    // getJwtToken({},'asd').then( token => {
+    //         userObj.tokens = {}
+    //         userObj.tokens.access = token
+    //         console.log(token)
+    //         next()
+    //     });
+
+    // next()
+});
 
 // OK - закоменчено, чтоб не отваливались тесты
 // [!] Можно переопределить метод toJSON(), чтобы возвращать

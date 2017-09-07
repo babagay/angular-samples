@@ -9,6 +9,7 @@ const validator = require('validator')
 const {getToken:getJwtToken, getTokenStr:getJwtTokenStr} = require('./../../../utils/jwt')
 const _ = require('lodash')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs') // для проверки пароля
 
 // Создает переменную User и вкидывает в нее UserModel.User
 const {User} = require('./UserModel')
@@ -85,7 +86,70 @@ let getUser = (req, res) => {
     } );
 }
 
+// В постмане юзать x-www-form-urlencoded либо raw
+// 202 Accepted
+// 400 Bad request
+// 401 Unauthorized
+// 403 Forbidden
+/**
+ * Возвращает x-auth-token, который можно использовать в GET user/me
+ * Если пароль не верный, выданный ранее токен обнуляется
+ * @param req
+ * @param res
+ */
+let loginUser = (req, res) => {
 
+  let body = _.pick(req.body, ['email','password'])
+
+  User.findByCredentials(body.email, body.password)
+      .then( doc => {
+
+        if( !doc ) {
+            // Сюда интерпретатор попадает, когда юзер найден (по мылу), пароль был отправлен, но он не верный
+            // Исходя из этого, можно аннулировать старый токен
+
+            User.findOne({email:body.email}).then( user => {
+                user.tokens = []
+                user.save()
+            });
+
+            throw new Error('User exists but wrong password gotten')
+        }
+
+        return doc
+  })
+      .then( usrObj => {
+
+          // let user = new User(req.body);
+          let user = new User( usrObj );
+
+          // сгенерировать новый токен (сохранив его в базу) и вернуть его юзеру
+          /* return */ user.generateAuthToken().then( token => {
+              res.header( 'x-auth', token )
+                  .status( 202 )
+                  .send( user );
+          });
+  })
+      .catch( e => {
+          // можно так:  res.status(401).send( e.message ), но мы не знаем, какое сообщенеи сюда прилетело - сгенеренное нами (показывать можно) или системно (скрыть, но записать в лог)
+          // Здесь можно настроить сепарацию ошибок - отправлять на фронт свои, но прятать системные
+          res.status(403).send({'message': 'Forbidden'})
+  });
+
+  // OK
+  // User.findOne({"email":req.body.email}).then( doc => {
+  //
+  //     let hashedPassword = doc.password
+  //
+  //     if( !bcrypt.compareSync(req.body.password, hashedPassword) ){
+  //       res.status(404).send({'message': 'Not found'})
+  //     } else {
+  //       res.status(200).send({'message': 'Ok'})
+  //     }
+  //  }).catch( err => {
+  //     res.status(401).send({'message': 'User not found'})
+  //   });
+};
 
 // С использованием middleware
 let getUserMe = (req, res) => {
@@ -150,5 +214,6 @@ module.exports = {
     getUserMe,
     dropUser,
     updateUser,
-    getAll
+    getAll,
+    loginUser
 };

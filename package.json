@@ -94,6 +94,7 @@
     "@angularclass/hmr-loader": "~3.0.2",
     "angular-in-memory-web-api": "~0.3.2",
     "axios": "^0.16.2",
+    "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.2",
     "core-js": "^2.4.1",

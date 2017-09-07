@@ -1,10 +1,18 @@
 /**
- * Тестирование http-запросов
+ * Тестирование http-запросов (в основном , эндпоинтов, юзающих mongoose)
  * Использован: chai в качестве assertion-либы
  * expect и assert - тоже изнутри chai
  * @see http://chaijs.com/plugins/chai-http/
+ *
+ * [?] если в одном тесте юзер создается,
+ * а в другом, этот юзер выгребается - насколько это грамотно?
+ * Получается, что последовательность тестов имеет значение!
+ * Видимо, юзеров для тестов надо создавать вручную.
+ *
+ * [!] Запускать тесты выборочно (по одному) можно в InetlliJ
  */
 let {mongoose} = require('../node-samples/mongo-api/connection');
+let _ = require('lodash')
 
 let {User,addUser,dropUser,updateUser,getUser,getAll:getAllUsers} = require('../node-samples/mongo-api/models/user');
 let {Todo} = require('../node-samples/mongo-api/models/todo');
@@ -17,20 +25,35 @@ process.env.NODE_ENV = 'test';
 //Подключаем dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../node-samples/mongo-api/server.test'); // сделано отдельное приложение, чтобы тестить, когда основное запущено
+
+// сделано отдельное приложение, чтобы тестить, когда основное запущено
+// Однако, можно в этом файле выставлять process.env.NODE_ENV и, тогда, в файле server.js ее проверять, и менять порт
+let server = require('../node-samples/mongo-api/server.test');
+
 let expect = chai.expect;
 let should = chai.should();
 let assert = chai.assert;
 
 chai.use(chaiHttp);
 
+let email = "user@asd.com"
+
 let testUser = {
-    name: "Basco da Brama"
+    name: "Basco da Brama",
+    email: "basco@da.brama"
 }
 
 let anotherUser = {
-    name: "Betchoven"
+    name: "Betchoven",
+    email: "Betchoven@in.Venice",
+    password: "asd123"
 }
+
+let shortEmailUser = {
+    name: "Saljeri",
+    email: "s@co"
+}
+
 
 let brokenUser = {
     name: "Fo"
@@ -38,6 +61,8 @@ let brokenUser = {
 
 let _id = ""
 let _id2 = ""
+
+
 
 // Можно создать объект с готовым _id
 let mockObjTodo = {
@@ -47,24 +72,37 @@ let mockObjTodo = {
     _id: new ObjectID()
 }
 
+let userMeTest_token;
+let anotherUser_token;
+let userMeTest_id;
+
 // Выполнить перед каждым тестом
 // beforeEach(done => {
 //     User.remove({name:anotherUser.name}).then( () => done() );
 // });
 
 describe('Mongoose CRUD User testing',() => {
-    it('Add a user', (done) => {
+    it('Create a user', (done) => {
         chai.request(server)
             .post('/user')
             .send(testUser)
             .end( (err,res) => {
                 res.should.have.status(200);
+                should.exist(res.headers['x-auth']);
+
                 res.body.should.be.a('object');
                 res.body.should.have.property('message');
                 res.body.should.have.property('doc');
-                res.body.doc.should.have.property('_id');
+                res.body.doc.should.have.property('_id'); // аналог toExist()
+                res.body.doc.should.have.property('tokens');
+                res.body.doc.tokens.should.have.key(0);
+                res.body.doc.tokens[0].should.have.property('token');
+
+                userMeTest_token = res.body.doc.tokens[0].token;
+                userMeTest_id = res.body.doc._id;
 
                 expect(res.body.doc._id).to.be.a('string');
+                expect(res.body.doc.email).eq(testUser.email);
 
                 _id = res.body.doc._id // save id
 
@@ -77,21 +115,181 @@ describe('Mongoose CRUD User testing',() => {
     });
 
     // Другой вариант проверки - непосредственно смотрим в базе
-    it('Add another user', (done) => {
+    // [!] Вообще, лучше, вероятно, класть юзера руками, а потом делать GET-запрос тестовый
+    //     и наоборот, добавлять через тестовый запрос, а потом проверять прямым доступом к базе.
+    //     Иначе, если и класть , и проверять через АПИ, то тесты будут зависеть один от другого, что, скорее всего, не очень хорошо
+    //     Так, например, если отвалился тест, создающий юзера (и юзер не был создан), то за ним отвалится тест, который проверяет его наличие
+    it('Should create a user', (done) => {
+
+        let user = _.clone(anotherUser)
+
+        // Добавляем знак !, чтобы указать системе на факт передачи plain-text пароля, чтоб она его захешировала
+        user.password += "!"
+
         chai.request(server)
             .post('/user')
-            .send(anotherUser)
+            .send( user )
             .end( (err,res) => {
                 res.should.have.status(200);
 
+                // OK
                 User.find({name:anotherUser.name}).then(doc => {
-                    expect(doc.length).to.be.a('number').equal(1)
+                    expect(doc.length).to.be.a('number').equal(1) // User д.б. один
                     expect(doc[0].name).to.be.a('string').equal(anotherUser.name)
-                    _id2 = doc[0]._id // save id
+                    _id2 = doc[0]._id // save id to remove the user below
                     done()
                 }).catch(e => {
                     done(e)
                 });
+
+                // По идее, можно так, но так отваливается тест, удаляющий этого юзера
+                // User.findOne({"email":anotherUser.email}).then( doc => {
+                //   should.exist( doc.name )
+                //   doc.name.should.eq( anotherUser.name )
+                //   done()
+                // });
+            })
+    });
+
+    // todo
+    // Уникальность имейла не работает
+    xit('Should not create user if email is already used', (done) => {
+      chai.request(server)
+        .post('/user')
+        .send(anotherUser)
+        .end( (err,res) => {
+          res.should.have.status(404);
+
+        })
+    });
+
+    it('Should not create user if there are validation errors', (done) => {
+      chai.request(server)
+        .post('/user')
+        .send(shortEmailUser)
+        .end( (err,res) => {
+          res.should.have.status(206);
+          done()
+        })
+    });
+
+    it('Should not create user without name', (done) => {
+      chai.request(server)
+        .post('/user')
+        .send({email})
+        .end( (err,res) => {
+          res.should.have.status(206);
+          done()
+        })
+    });
+
+    // Проверить статус и наличие токена в заголовке ответа
+    it('Should login a user and verify auth token', (done) => {
+
+        let user = _.pick(anotherUser,['email','password'])
+
+        chai.request(server)
+            .post('/user/login')
+            .send( user )
+            .end( (err,res) => {
+                should.exist(res.headers['x-auth']);
+                // res.header.should.have.key('x-auth') // не работает
+
+                res.headers['x-auth'].should.be.a('string')
+                res.should.have.status(202);
+
+                anotherUser_token = res.headers['x-auth']
+
+                // Проверяем явно, в базе
+                User.findOne({email:anotherUser.email}).then( doc => {
+                    doc.should.have.property('tokens')
+
+                    doc.tokens.should.be.a('array')         // doc.tokens.should.greater.than(0) можно проверить
+                    doc.tokens.should.have.property(0)
+                    doc.tokens[0].should.be.a('object');
+                    doc.tokens[0].should.have.property('access')
+                    doc.tokens[0].should.have.property('token')
+
+                    doc.tokens[0].token.should.eq( res.headers['x-auth'] ) // Сравниваем полученный от сервера токен с тем, что лежит в базе
+                    expect( doc.tokens[0].token ).to.be.a('string').equal( res.headers['x-auth'] ) // аналог
+
+                    doc.password.should.not.eq( anotherUser.password ) // Проверяем, что пароль захеширован
+
+                    done()
+                }).catch( e => {
+                    // [!] Если блока catch не будет, при возникновении исключения тест зафейлится с ошибкой Timeout of 2000ms exceeded
+                    done(e)
+                });
+            })
+    });
+
+    it('Should get 403 and no token (POST user/login) after using wrong email ', (done) => {
+
+        let user = _.pick(anotherUser,['email','password'])
+        user.email += "foo"
+
+        chai.request(server)
+            .post('/user/login')
+            .send( user )
+            .end( (err,res) => {
+                should.not.exist(res.headers['x-auth']);
+                res.should.have.status(403);
+                done()
+            })
+    });
+
+
+    it('Should get 403 (POST user/login) without password ', (done) => {
+
+        let user = _.pick(anotherUser,['email'])
+
+        chai.request(server)
+            .post('/user/login')
+            .send( user )
+            .end( (err,res) => {
+                res.should.have.status(403);
+                done()
+            })
+    });
+
+    // сохраненный после теста логина x-auth токен использовн его в тесте GET user/me. Хотя, это опять связанность тестов.
+    it('Should get userinfo (GET user/me) by auth token given after login test', (done) => {
+
+        chai.request(server)
+            .get('/user/me')
+            .set('x-auth', anotherUser_token)
+            .end( (err,res) => {
+                res.should.have.status(200);
+
+                res.body.should.have.property('User')
+                res.body.User.should.have.property('email')
+                res.body.User.email.should.eq(anotherUser.email)
+
+                done()
+            })
+    });
+
+
+    // Проверяем сброс токена, если при логине был введен не верный пароль
+    // Опять-таки, проявляется связанность тестов. Данный тест должен идти после 'Should get userinfo (GET user/me) by auth token given after login test'
+    it('Should get 403 and reset old token (POST user/login) after using wrong password ', (done) => {
+
+        let user = _.pick(anotherUser,['email','password'])
+        user.password += "foo"
+
+        chai.request(server)
+            .post('/user/login')
+            .send( user )
+            .end( (err,res) => {
+                res.should.have.status(403);
+
+                User.findOne({email:user.email}).then( doc => {
+                    doc.tokens.length.should.eq(0); // Проверяем, что токен обнулился
+
+                    done()
+                }).catch( e =>
+                    done()
+                );
             })
     });
 
@@ -107,6 +305,7 @@ describe('Mongoose CRUD User testing',() => {
             })
     });
 
+    // [!] Если мы сравнимаем два объекта, нужно использовать equal() вместо toBe()
     it('Get single user', (done) => {
 
         chai.request(server)
@@ -120,6 +319,77 @@ describe('Mongoose CRUD User testing',() => {
                 res.body.doc.should.have.property('name').equal(testUser.name);
                 // res.body.doc._id.should.equal(_id)
                 // res.body.doc.name.should.equal(testUser.name)
+                done()
+            })
+    });
+
+    it('Get user/me', (done) => {
+
+        let token = userMeTest_token
+
+        chai.request(server)
+            .get(`/user/me`)
+            .set('x-auth',token)
+            .end( (err,res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('User');
+                // res.body.should.have.property('doc');
+                // res.body.doc.should.have.property('_id').equal(_id);
+                // res.body.doc.should.have.property('name').equal(testUser.name);
+                // res.body.doc._id.should.equal(_id)
+                res.body.User._id.should.equal(userMeTest_id)
+                done()
+            })
+    });
+
+    it('Should return 401 from GET user/me', (done) => {
+
+        let token = userMeTest_token + "invalid token"
+
+        chai.request(server)
+            .get(`/user/me`)
+            .set('x-auth',token)
+            .end( (err,res) => {
+                res.should.have.status(401);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.error.should.equal('Token is invalid')
+                done()
+            })
+    });
+
+    it('Should return 401 (GET user/me) if token is not set', (done) => {
+
+        let token = userMeTest_token + "invalid token"
+
+        chai.request(server)
+            .get(`/user/me`)
+            .end( (err,res) => {
+                res.should.have.status(401);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.error.should.equal("A valid token must be set in x-auth header!")
+                done()
+            })
+    });
+
+    it('Should return 404 (GET user/me) if not authenticated', (done) => {
+
+        // Так не катит - токен будет невалидный!
+        // let token = userMeTest_token.substring(0,-1) + "z" // Token is valid but not authorized
+
+        // Лучше взять настоящий токен
+        let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1OWE5OGRiNDc5Y2RkODJkNWNhMzM3MTUiLCJhY2Nlc3MiOiJhdXRoIiwiaWF0IjoxNTA0Mjg0MDg0fQ.VQMGsm0-_Wnn3nwE6vyXQuPd3yvLpOatDCyr4uoP7b8"
+
+        chai.request(server)
+            .get(`/user/me`)
+            .set('x-auth',token)
+            .end( (err,res) => {
+                res.should.have.status(404);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.error.should.equal('The given token is unauthorized (no such user)')
                 done()
             })
     });
@@ -172,7 +442,8 @@ describe('Mongoose CRUD User testing',() => {
             })
     });
 
-    it('Try to add user with invalid body data', (done) => {
+    // Не должен быть добавлен юзер без имейла
+    it('Should return 206 (POST user) if user is invalid', (done) => {
         chai.request(server)
             .post('/user')
             .send(brokenUser)
