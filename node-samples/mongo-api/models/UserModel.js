@@ -73,6 +73,9 @@ SchemaUser.getSalt = function () {
 // Расширяем модель новым методом
 // [!] не используем стрелочную функцию, т.к. нам нужна ссылка на this
 // SchemaUser.methods - instance methods
+// [usage]
+//    var user = new User(req.body);
+//    user.generateAuthToken().then( token => {})
 SchemaUser.methods.generateAuthToken = function () {
     let user = this
     let access = 'auth'
@@ -94,7 +97,47 @@ SchemaUser.methods.generateAuthToken = function () {
         });
 
     return user.save().then( () => token );
-}
+};
+
+// Для использования top level операторов (таких, как $pull) необходимо, чтобы метод (напр, findOneAndUpdate()) был вызван на модели (в данном случае, User).
+// Т.е. removeToken() не должен быть статическим (SchemaUser.statics.removeToken)
+SchemaUser.methods.removeToken = function (token, callback) {
+
+  /**
+   * @var SchemaUser user
+   * @type {mongoose.Schema.methods}
+   */
+    // user.update - не заработало
+  var user = this; // Документ типа SchemaUser?
+
+
+  // Работает только через колбэк
+  User.update({"tokens.token": token}, {  tokens: [] }, callback);
+
+
+  // Работает, но только через колбэк , а не промис
+  // User.findOneAndUpdate(
+  //   // Search conditions
+  //   {
+  //     // $pull: {  tokens: { token: token }  } - не заработало
+  //     // "tokens.token": token
+  //     // [!] Поиск не по значению поля, а, когда значением поля является заданный объект
+  //     "email": "Lugo@in.ua"
+  //   },
+  //   // Update object
+  //   {
+  //     tokens: []
+  //   },
+  //   // options
+  //   {
+  //     "new": true,
+  //     passRawResult: true
+  //   },
+  //   (err,doc,rawResult) => {
+  //     callback()
+  //   }
+  // );
+};
 
 /**
  * Через магию async/await можно промис превратить в примитив или объект! Точнее, сэмулировать
@@ -112,6 +155,10 @@ let fetchUser = (User, id, token, auth) => {
 
 // Добавление статического метода через SchemaUser.statics
 // Опять-таки, избегаем стрелочной нотации
+// [!] Как найти юзера в МонгоДБ по его маркеру?
+//     Фишка в том,  что мы встроили(захешировали) объект юзера в сам токен, откуда мы можем достать _id!
+// [usage]
+//    User.findByToken(token);
 SchemaUser.statics.findByToken = async function (token) {
     let User = this;
     let salt = SchemaUser.getSalt()
@@ -138,6 +185,9 @@ SchemaUser.statics.findByToken = async function (token) {
 
     return document
 };
+
+
+
 
 SchemaUser.statics.findByCredentials = async function (email, password) {
 

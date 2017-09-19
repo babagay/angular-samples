@@ -136,6 +136,8 @@ let loginUser = (req, res) => {
           res.status(403).send({'message': 'Forbidden'})
   });
 
+
+
   // OK
   // User.findOne({"email":req.body.email}).then( doc => {
   //
@@ -149,6 +151,44 @@ let loginUser = (req, res) => {
   //  }).catch( err => {
   //     res.status(401).send({'message': 'User not found'})
   //   });
+};
+
+// Обнуляем токен
+// [!] попробуем здесь не возвращать никаких сообщений типа "обнуление токена прошло удачно", а просто вернем измененный объект юзера
+// [!] после того, как отработал посредник authenticate, в поле res.user лежит документ User, соответсвующий текущему юзеру
+let logoutUser = (req,res) => {
+
+    let callback = (err, raw) => {
+      if( err === null && raw.ok === 1 ){
+        res.status(200).json({'message':'Ok', 'modified': raw.nModified })
+      } else {
+        res.status(401).json({'error': err.message})
+      }
+      console.log("raw",raw)
+    }
+
+    // [!] req.token появился после работы authenticate
+    res.user.removeToken(req.token, callback);
+
+
+
+    // Ok
+    // Здесь исп-ся плоский кэтч + промисообразный, т.к. User.findByToken кидает эксепш
+    // Прикол, однако, в том, что посредник authenticate уже вытянул документ юзера через тот же метод findByToken() и положил его в res.user
+    // try {
+    //     User.findByToken(req.params.token).then( doc => {
+    //         User.findOne({_id:doc._id}).then( user => {
+    //           user.tokens = []
+    //           user.save()
+    //           res.status(200).send({'User':user})
+    //         });
+    //     }).catch(e => {
+    //       res.status(401).json({'error':'User is not authenticated.'})
+    //     });
+    //
+    // } catch (e){
+    //   res.status(401).json({'error':'User is not authenticated'})
+    // }
 };
 
 // С использованием middleware
@@ -215,5 +255,6 @@ module.exports = {
     dropUser,
     updateUser,
     getAll,
-    loginUser
+    loginUser,
+    logoutUser
 };

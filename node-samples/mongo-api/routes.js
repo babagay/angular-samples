@@ -5,7 +5,7 @@ let {mongoose} = require('./connection');
 // var Todo = require('./models/todo'); - можно так
 let {Todo,add:addTodo,getAll:getAllTodos,getOne:getOneTodo,drop:deleteTodo,updateObject:upTodo,up:upTodoById} = require('./models/todo'); // создаст переменную Todo со значением из поля Todo подключаемого объекта
 
-let {User,addUser,dropUser,updateUser,getUser,loginUser,getUserMe,getAll:getAllUsers} = require('./models/user');
+let {User,addUser,dropUser,updateUser,getUser,loginUser,logoutUser,getUserMe,getAll:getAllUsers} = require('./models/user');
 
 const {authenticate:authUser} = require('./../../utils/auth')
 
@@ -59,6 +59,16 @@ module.exports = (app) => {
     app.post('/user/login', (req, res) =>
         loginUser(req,res)
     );
+
+    // можно было бы так...
+    // app.post('/user/logout', (req, res) =>
+    //     logoutUser(req,res)
+    // );
+
+    // можно юзать '/user/me/:token', но, тогда токен будет и в заголовке и в роуте
+    app.delete('/user/me', authUser, (req,res) => {
+      logoutUser(req,res)
+    });
 
     // OK
     // app.get('/user/me', (req, res) =>

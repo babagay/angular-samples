@@ -20,8 +20,9 @@ let authenticate = async (req, res, next) => {
 
     if( user === null ) return res.status(404).json({'error': 'The given token is unauthorized (no such user)'})
 
-    res.user = user
-    res.token = token
+    // мы можем произвольно добавлять поля в объекты req и res, а потом пользоваться ими в функциях-обработчиках соответсвующих запросов
+    res.user = user // возможно, более правильно юзать req.user
+    req.token = token // решил положить токен в request
 
     next()
 };

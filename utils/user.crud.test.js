@@ -86,7 +86,7 @@ describe('Mongoose CRUD User testing',() => {
         chai.request(server)
             .post('/user')
             .send(testUser)
-            .end( (err,res) => {
+            .end((err, res) => {
                 res.should.have.status(200);
                 should.exist(res.headers['x-auth']);
 
@@ -119,7 +119,7 @@ describe('Mongoose CRUD User testing',() => {
     //     и наоборот, добавлять через тестовый запрос, а потом проверять прямым доступом к базе.
     //     Иначе, если и класть , и проверять через АПИ, то тесты будут зависеть один от другого, что, скорее всего, не очень хорошо
     //     Так, например, если отвалился тест, создающий юзера (и юзер не был создан), то за ним отвалится тест, который проверяет его наличие
-    it('Should create a user', (done) => {
+    it('Should create a user: ' + anotherUser.name + '<' + anotherUser.email + '>', (done) => {
 
         let user = _.clone(anotherUser)
 
@@ -128,12 +128,12 @@ describe('Mongoose CRUD User testing',() => {
 
         chai.request(server)
             .post('/user')
-            .send( user )
-            .end( (err,res) => {
+            .send(user)
+            .end((err, res) => {
                 res.should.have.status(200);
 
                 // OK
-                User.find({name:anotherUser.name}).then(doc => {
+                User.find({name: anotherUser.name}).then(doc => {
                     expect(doc.length).to.be.a('number').equal(1) // User д.б. один
                     expect(doc[0].name).to.be.a('string').equal(anotherUser.name)
                     _id2 = doc[0]._id // save id to remove the user below
@@ -154,44 +154,45 @@ describe('Mongoose CRUD User testing',() => {
     // todo
     // Уникальность имейла не работает
     xit('Should not create user if email is already used', (done) => {
-      chai.request(server)
-        .post('/user')
-        .send(anotherUser)
-        .end( (err,res) => {
-          res.should.have.status(404);
+        chai.request(server)
+            .post('/user')
+            .send(anotherUser)
+            .end((err, res) => {
+                res.should.have.status(404);
 
-        })
+            })
     });
 
     it('Should not create user if there are validation errors', (done) => {
-      chai.request(server)
-        .post('/user')
-        .send(shortEmailUser)
-        .end( (err,res) => {
-          res.should.have.status(206);
-          done()
-        })
+        chai.request(server)
+            .post('/user')
+            .send(shortEmailUser)
+            .end((err, res) => {
+                res.should.have.status(206);
+                done()
+            })
     });
 
     it('Should not create user without name', (done) => {
-      chai.request(server)
-        .post('/user')
-        .send({email})
-        .end( (err,res) => {
-          res.should.have.status(206);
-          done()
-        })
+        chai.request(server)
+            .post('/user')
+            .send({email})
+            .end((err, res) => {
+                res.should.have.status(206);
+                done()
+            })
     });
+
 
     // Проверить статус и наличие токена в заголовке ответа
     it('Should login a user and verify auth token', (done) => {
 
-        let user = _.pick(anotherUser,['email','password'])
+        let user = _.pick(anotherUser, ['email', 'password'])
 
         chai.request(server)
             .post('/user/login')
-            .send( user )
-            .end( (err,res) => {
+            .send(user)
+            .end((err, res) => {
                 should.exist(res.headers['x-auth']);
                 // res.header.should.have.key('x-auth') // не работает
 
@@ -201,7 +202,7 @@ describe('Mongoose CRUD User testing',() => {
                 anotherUser_token = res.headers['x-auth']
 
                 // Проверяем явно, в базе
-                User.findOne({email:anotherUser.email}).then( doc => {
+                User.findOne({email: anotherUser.email}).then(doc => {
                     doc.should.have.property('tokens')
 
                     doc.tokens.should.be.a('array')         // doc.tokens.should.greater.than(0) можно проверить
@@ -210,13 +211,13 @@ describe('Mongoose CRUD User testing',() => {
                     doc.tokens[0].should.have.property('access')
                     doc.tokens[0].should.have.property('token')
 
-                    doc.tokens[0].token.should.eq( res.headers['x-auth'] ) // Сравниваем полученный от сервера токен с тем, что лежит в базе
-                    expect( doc.tokens[0].token ).to.be.a('string').equal( res.headers['x-auth'] ) // аналог
+                    doc.tokens[0].token.should.eq(res.headers['x-auth']) // Сравниваем полученный от сервера токен с тем, что лежит в базе
+                    expect(doc.tokens[0].token).to.be.a('string').equal(res.headers['x-auth']) // аналог
 
-                    doc.password.should.not.eq( anotherUser.password ) // Проверяем, что пароль захеширован
+                    doc.password.should.not.eq(anotherUser.password) // Проверяем, что пароль захеширован
 
                     done()
-                }).catch( e => {
+                }).catch(e => {
                     // [!] Если блока catch не будет, при возникновении исключения тест зафейлится с ошибкой Timeout of 2000ms exceeded
                     done(e)
                 });
@@ -225,13 +226,13 @@ describe('Mongoose CRUD User testing',() => {
 
     it('Should get 403 and no token (POST user/login) after using wrong email ', (done) => {
 
-        let user = _.pick(anotherUser,['email','password'])
+        let user = _.pick(anotherUser, ['email', 'password'])
         user.email += "foo"
 
         chai.request(server)
             .post('/user/login')
-            .send( user )
-            .end( (err,res) => {
+            .send(user)
+            .end((err, res) => {
                 should.not.exist(res.headers['x-auth']);
                 res.should.have.status(403);
                 done()
@@ -241,12 +242,12 @@ describe('Mongoose CRUD User testing',() => {
 
     it('Should get 403 (POST user/login) without password ', (done) => {
 
-        let user = _.pick(anotherUser,['email'])
+        let user = _.pick(anotherUser, ['email'])
 
         chai.request(server)
             .post('/user/login')
-            .send( user )
-            .end( (err,res) => {
+            .send(user)
+            .end((err, res) => {
                 res.should.have.status(403);
                 done()
             })
@@ -258,7 +259,7 @@ describe('Mongoose CRUD User testing',() => {
         chai.request(server)
             .get('/user/me')
             .set('x-auth', anotherUser_token)
-            .end( (err,res) => {
+            .end((err, res) => {
                 res.should.have.status(200);
 
                 res.body.should.have.property('User')
@@ -274,23 +275,74 @@ describe('Mongoose CRUD User testing',() => {
     // Опять-таки, проявляется связанность тестов. Данный тест должен идти после 'Should get userinfo (GET user/me) by auth token given after login test'
     it('Should get 403 and reset old token (POST user/login) after using wrong password ', (done) => {
 
-        let user = _.pick(anotherUser,['email','password'])
+        let user = _.pick(anotherUser, ['email', 'password'])
         user.password += "foo"
 
         chai.request(server)
             .post('/user/login')
-            .send( user )
-            .end( (err,res) => {
+            .send(user)
+            .end((err, res) => {
                 res.should.have.status(403);
 
-                User.findOne({email:user.email}).then( doc => {
+                User.findOne({email: user.email}).then(doc => {
                     doc.tokens.length.should.eq(0); // Проверяем, что токен обнулился
 
                     done()
-                }).catch( e =>
+                }).catch(e =>
                     done()
                 );
             })
+    });
+
+    // сейчас решил объект юзера не возвращать, т.к. юзается метод монгуса, который апдейтид, но не отдает новый объект
+    // Так как после предыдущих тестов токен обнулился из-за неудачного  логина, надо снова залогиниться
+    // [!] Fixme: тест отваливается по непонятной схеме
+    it('Should remove auth token on logout of user ' + anotherUser.name, (done) => {
+
+        let user = _.pick(anotherUser, ['email', 'password'])
+        let userToLogout = _.pick(anotherUser, ['email'])
+
+        // Сначала логиним юзера
+        chai.request(server)
+            .post('/user/login')
+            .send( user )
+            .end((err, res) => {
+
+                if (err)
+                    return done(err);
+
+                // Потом разлогиниваем
+                chai.request(server)
+                    .delete('/user/me')
+                    .set('x-auth', anotherUser_token)
+                    .send(user)
+                    .end((err, res) => {
+
+                        if (err)
+                            return done(err);
+
+                        res.should.have.status(200);
+                        res.body.should.have.property('message');
+                        res.body.message.should.eq('Ok');
+
+                        // Проверяем в базе
+                        User.findOne({email: userToLogout.email})
+                            .then(doc => {
+                                doc.should.have.property('tokens');
+                                doc.should.have.property('_id');
+                                expect(doc.tokens).to.be.a('array');
+                                expect(doc.tokens.length).equal(0); // массив tokens пустой
+
+                                // expect(doc._id).equal( _id2  ); // не работает
+
+                                doc.tokens.length.should.eq(0);
+                                done();
+                            })
+                            .catch(e => {
+                                done(e)
+                            });
+                    });
+            });
     });
 
     it('Get all users', (done) => {
