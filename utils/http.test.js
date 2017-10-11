@@ -188,31 +188,33 @@ describe('Http json testing', function() {
 
 
 describe('Todo api testing', () => {
-    it('should return 404 with message "id is invalid"', done => {
-
-       let wrongId = "asd"
-
-       request( todoApp )
-           .get( `/todo/${wrongId}` )
-           .expect( 404 )
-           .expect( res => {
-                expect( res.body.error ).toBe( 'Id is invalid' )
-           })
-           .end( done );
-    });
-
-    it('should return 404 with "Not found" message', done => {
-
-       let wrongId = new ObjectID()
-
-       request( todoApp )
-           .get( `/todo/${wrongId}` )
-           .expect( 404 )
-           .expect( res => {
-                expect( res.body.error ).toBe( `Document [${wrongId}] not found` )
-           })
-           .end( done );
-    });
+    // [!] тесты перенесены в user.crud.test
+    // it('should return 404 with message "id is invalid"', done => {
+    //
+    //    let wrongId = "asd"
+    //
+    //    request( todoApp )
+    //        .get( `/todo/${wrongId}` )
+    //        .set('x-auth','')
+    //        .expect( 404 )
+    //        .expect( res => {
+    //             expect( res.body.error ).toBe( 'Id is invalid' )
+    //        })
+    //        .end( done );
+    // });
+    //
+    // it('should return 404 with "Not found" message', done => {
+    //
+    //    let wrongId = new ObjectID()
+    //
+    //    request( todoApp )
+    //        .get( `/todo/${wrongId}` )
+    //        .expect( 404 )
+    //        .expect( res => {
+    //             expect( res.body.error ).toBe( `Document [${wrongId}] not found` )
+    //        })
+    //        .end( done );
+    // });
 
     it('Should update todo (PATCH: todo)', done => {
 
@@ -255,32 +257,33 @@ describe('Todo api testing', () => {
            .end( done );
     });
 
-    it('should delete todo and return 200', done => {
+    // Перенесены в user.crud.test
+    // it('should delete todo and return 200', done => {
+    //
+    //    // let id = mockTodo._id.toHexString() // not work
+    //    let id = mockTodo._id
+    //
+    //    request( todoApp )
+    //        .del( `/todo/${id}` )
+    //        .expect( 200 )
+    //        .expect( res => {
+    //            expect( res.body.message ).toBe( `Item successfully deleted!` )
+    //        })
+    //        .end( done );
+    // });
 
-       // let id = mockTodo._id.toHexString() // not work
-       let id = mockTodo._id
-
-       request( todoApp )
-           .del( `/todo/${id}` )
-           .expect( 200 )
-           .expect( res => {
-               expect( res.body.message ).toBe( `Item successfully deleted!` )
-           })
-           .end( done );
-    });
-
-    it('should return 404 if todo not found', done => {
-
-       let id = new ObjectID()
-
-       request( todoApp )
-           .del( `/todo/${id}` )
-           .expect( 404 )
-           .expect( res => {
-               expect( res.body.message ).toBe( `Todo item was not deleted!` )
-           })
-           .end( done );
-    });
+    // it('should return 404 if todo not found', done => {
+    //
+    //    let id = new ObjectID()
+    //
+    //    request( todoApp )
+    //        .del( `/todo/${id}` )
+    //        .expect( 404 )
+    //        .expect( res => {
+    //            expect( res.body.message ).toBe( `Todo item was not deleted!` )
+    //        })
+    //        .end( done );
+    // });
 });
 
 var validateErrorResponseStructure = res => {

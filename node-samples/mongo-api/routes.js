@@ -18,7 +18,7 @@ module.exports = (app) => {
         getAllTodos(req,res)
     );
 
-    app.get('/todo/:id',   (req, res) => {
+    app.get('/todo/:id', authUser,  (req, res) => {
             getOneTodo(req,res)
         }
     );
@@ -43,7 +43,7 @@ module.exports = (app) => {
         addTodo(req,res)
     );
 
-    app.delete('/todo/:id', (req,res) =>
+    app.delete('/todo/:id', authUser, (req,res) =>
         deleteTodo(req,res)
     );
 

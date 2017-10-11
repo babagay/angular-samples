@@ -162,26 +162,23 @@ let getAll = (req,res) => {
 }
 
 /**
+ * Взять единственную тудушку конкретного авторизованного пользователя
+ *
  * Здесь идёт жёсткая привязка к типу http-запроса: мы предполагаем, что работаем с get-запросом вида <some-endpoint-name>/:id
  * В добавок, мы здесь работаем с объектом res (http response)
  *
  * Пример дополнительных boilerplate проверок
- *
- * @param req
- * @param res
  */
 let getOne = (req,res) => {
 
     let id = req.params.id
+    // let ownerId = res.user._id.toHexString()
 
     if( !ObjectID.isValid(id) ){
         return res.status(404).send({'error': "Id is invalid"})
     }
 
-    Todo.find({_id: new ObjectID(id) }).exec().then( r => {
-
-        // В случае ошибки попадаем в catch
-        // throw new Error("asd")
+    Todo.find({_id: new ObjectID(id), _creator: res.user._id }).exec().then( r => {
 
         if( r.length == 0 ){
         // if( !r ){ // не работает
@@ -191,8 +188,10 @@ let getOne = (req,res) => {
         res.json( r )
 
     }).catch( e => {
+
         if( process.env.NODE_ENV !== 'test' )
-            console.log(e)
+            console.log("DEBUG: todo.getOne()",e)
+
         var mess = e.message || e
         res.status(400)
         res.send({'error': mess})
@@ -246,6 +245,9 @@ let add = (req,res) => {
     } );
 };
 
+/**
+ * удалить тудушку, если она принадлежит данному пользователю
+ */
 // fixme
 // If id not valid - 404
 // After removing if no doc send 404
@@ -257,6 +259,8 @@ let drop = (req,res) => {
     if( !ObjectID.isValid(req.params.id) ) {
         return res.status(404).send({'error': "Id is invalid"})
     }
+
+
 
     // OK но, ожидалось, что будет работать со строковым req.params.id
     // Todo.findByIdAndRemove( new ObjectID(req.params.id) ).then( item => {
@@ -276,12 +280,8 @@ let drop = (req,res) => {
     //     res.json({ message: "Item successfully deleted!", result });
     // });
 
-    // [!] Мистика: Раньше работал толькок с объектом: туду.remove({_id: new ObjectID(req.params.id) })
-    //     Теперь - со строкой
-    //     Из некоторых тестов работает с объектом, из других - со строкой
-    //     Видимо, из-за того, что в некоторых местах я создаю тудушку с идентификатором-строкой, а в других - с объектом
-    //     TODO исправить, чтобы везде создавалась тудушка с объектом-идентификатором
-    Todo.remove({_id: new ObjectID(req.params.id) }).then( (r) => {
+    // [!] res.user._id - объект типа ObjectID
+    Todo.remove({_id: new ObjectID(req.params.id), _creator: res.user._id }).then( (r) => {
 
         let message = "Todo item was not deleted!"
         let status = 404

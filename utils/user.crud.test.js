@@ -510,16 +510,17 @@ describe('Mongoose CRUD User testing',() => {
     });
 
     /**
-     * Кладём в базу тудушку, запрашиваем ее по апи и вручную удаляем
+     * Кладём в базу тудушку, связанную с тестовым юзером, запрашиваем ее по апи и вручную удаляем
      */
     it('Get single Todo test', done => {
+
         let id = Math.round( Math.random() * 100 );
         let todo = new Todo({
             id: id,
             // _id: new ObjectID(),
             completed: false,
             title: "New todo item " + id,
-            _creator: '59b02bf23b6a8927e8b944df'
+            _creator: userMeTest_id
         });
 
         // Добавляем новую тудушку вручную
@@ -529,6 +530,7 @@ describe('Mongoose CRUD User testing',() => {
                 // Если убрать return, будет  Unhandled promise rejection
                 return chai.request(server)
                     .get(`/todo/${doc._id}`)
+                    .set('x-auth',someTmpToken)
                     .then( res => {
 
                         expect(res.body[0]).should.be.a('object');
@@ -553,8 +555,8 @@ describe('Mongoose CRUD User testing',() => {
                 // Удаляем тестовую тудушку
 
                 // Можно так:
-                // return todo.remove({_id:_id}).then( res => {
-                // А можно без указания _id, т.к. todo - это конкретный объект, связанный с базой
+                // return Туду.remove({_id:_id}).then( res => {
+                // А можно без указания _id, т.к. Туду - это конкретный объект, связанный с базой
                 todo.remove().then( res => {
                     done()
                 });
@@ -610,8 +612,63 @@ describe('Mongoose CRUD User testing',() => {
         });
     });
 
+    it("Should fetch single Todo of user " + testUser.name, done => {
+
+      let todoId = mockObjTodo._id.toHexString()
+
+      chai.request(server)
+        .get(`/todo/${todoId}`)
+        .set('x-auth',someTmpToken)
+        .then( res => {
+
+          res.body.should.be.a('array')
+          expect(res.body.length).equal(1)
+
+          done()
+        })
+        .catch( e => {
+          done(e)
+        });
+    });
+
+  it('should return 404 with message "id is invalid"', done => {
+
+    let wrongId = "asd"
+
+    chai.request( server )
+      .get( `/todo/${wrongId}` )
+      .set('x-auth',someTmpToken)
+      .end( (err,res) => {
+        res.should.have.status(404);
+        res.body.should.be.a('object');
+        res.body.should.have.property('error');
+        res.body.error.should.equal('Id is invalid')
+        done()
+      });
+  });
+
+  it('should return 404 with "Not found" message', done => {
+
+    let wrongId = new ObjectID()
+
+    chai.request( server )
+      .get( `/todo/${wrongId}` )
+      .set('x-auth',someTmpToken)
+      .end( (err,res) => {
+        res.should.have.status(404);
+        res.body.should.be.a('object');
+        res.body.should.have.property('error');
+        res.body.error.should.equal( `Document [${wrongId}] not found` )
+        done()
+      });
+
+  });
+
+
     it("Delete mock todo object by _id " + mockObjTodo._id.toHexString(), done => {
-        chai.request(server).delete(`/todo/${mockObjTodo._id.toHexString()}`)
+        chai.request(server)
+            .delete(`/todo/${mockObjTodo._id.toHexString()}`)
+            .set('x-auth',someTmpToken)
             .send(mockObjTodo)
             .then( res => {
                 res.should.have.status(200);
@@ -626,6 +683,17 @@ describe('Mongoose CRUD User testing',() => {
             });
     });
 
+    it('should not del todo and return 404 as todo is not found', done => {
+      chai.request( server )
+        .del( `/todo/${mockObjTodo._id.toHexString()}` )
+        .set('x-auth',someTmpToken)
+        .end( (err,res) => {
+          res.should.have.status(404);
+          res.body.message.should.equal( `Todo item was not deleted!` )
+          done()
+        });
+    });
+
     /**
      * Попытка взять тудушку с валидным, но не существующим _id
      * Тест получился с некоторыми хаками
@@ -633,7 +701,9 @@ describe('Mongoose CRUD User testing',() => {
     it('Should return 404 when todo not found', done => {
         let id = new ObjectID().toHexString();
 
-        chai.request(server).get(`/todo/${id}`)
+        chai.request(server)
+            .get(`/todo/${id}`)
+            .set('x-auth',someTmpToken)
             .then( res => {
                // сюда не заходит
             }).catch( e => {
@@ -671,7 +741,9 @@ describe('Mongoose CRUD User testing',() => {
         // });
 
         // Можно использовать секцию end()
-        chai.request(server).get('/todo/125+')
+        chai.request(server)
+            .get('/todo/125+')
+            .set('x-auth',someTmpToken)
             .end( (err,res) => {
                 err.status.should.equal(404)
 
