@@ -14,7 +14,7 @@ const {authenticate:authUser} = require('./../../utils/auth')
 module.exports = (app) => {
 
     // GET todos
-    app.get('/todo',   (req, res) =>
+    app.get('/todo', authUser, (req, res) =>
         getAllTodos(req,res)
     );
 
@@ -24,6 +24,10 @@ module.exports = (app) => {
     );
 
     /**
+     * Для создания тудушки нужно перердать в заголовке валидный токен (для этого юзера нужно сперва залогинить),
+     * а также, указать креатора.
+     * Т.о., тудушку может создать только залогиненный юзер
+     *
      * В постмане выставить Raw во вкладке Body
      * И выбрать в выпадающем списке JSON(application/json)
      * [example]
@@ -35,7 +39,7 @@ module.exports = (app) => {
      *
      *  Также, можожно использовать x-www-form-urlencoded
      */
-    app.post('/todo', (req,res) =>
+    app.post('/todo', authUser, Todo.setIdMiddleware, Todo.setCreatorMiddleware, (req,res) =>
         addTodo(req,res)
     );
 
@@ -91,10 +95,12 @@ module.exports = (app) => {
         }
     );
 
+    // fixme: по-хорошему, нужно отдавать объект юзера в урезанном виде, например, без массива auth-токенов
     app.get('/user/:id', (req,res) =>
         getUser(req,res)
     );
 
+    // [!] После успешного создания юзер автоматически залогинен
     app.post('/user', (req,res) =>
         addUser(req, res)
     );
@@ -103,7 +109,7 @@ module.exports = (app) => {
         dropUser(req,res)
     );
 
-    app.put('/user/:id', (req,res) =>
+    app.put('/user/:id', authUser, (req,res) =>
         updateUser(req,res)
     );
 

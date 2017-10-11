@@ -17,6 +17,12 @@
  * Breakpoint ставится в коде командой debugger;
  */
 
+/**
+ * [simple debugging]
+ * Либо в конфигурации добавляем параметр --inspect (тогда автоматом открывается инспектор в хроме: chrome-devtools://devtools/bundled/inspector, без поддержки брейкпоинтов)
+ * Либо просто запускаем в режиме дебага (зеленый жук). Делаем это в IntelliJ
+ */
+
 var testObj = {
     id: 1,
     title: 'Note 1',

@@ -41,8 +41,14 @@ function dropUser(req, res) {
 }
 
 
-
+/**
+ *  [usage]
+ *      name: 'Boris GodunoffDasd',
+ *      email: 'ant@i.ua'
+ *      password: 'asd123!' - с ! на конце, как во время смены пароля
+ */
 let addUser = (req, res) => {
+
     var user = new User(req.body);
 
     user.save().then( () => {
@@ -62,8 +68,11 @@ let addUser = (req, res) => {
             // doc: user.toJSON() // можно так
         })
     }).catch( e => {
-        if( process.env.NODE_ENV !== 'test' )
-            console.log(e)
+
+        if( process.env.NODE_ENV !== 'test' ) {
+          console.log("DEBUG: addUser()", e)
+        }
+
         var mess = e.message || e
         res.status(206)
         res.send({'error': mess})
@@ -79,7 +88,7 @@ let getUser = (req, res) => {
             });
 
     }).catch( e => {
-        console.log(e)
+        console.log("DEBUG: getUser()", e)
         var mess = e.message || e
         res.status(400)
         res.send({'error': mess})
@@ -216,22 +225,59 @@ let getUserMe = (req, res) => {
 
 
 
+/**
+ * [!] Когда в постмане отправляем Raw-данные, ставим вручную Content-Type = application/json
+ *     Если же, x-www-form-urlencoded, то  заголовок будет автоматически выставлен в application/x-www-form-urlencoded
+ */
+// [!] Допустимые типы контента (заголовок content-type): application/x-www-form-urlencoded
+// [!] ID пользователя, которого мы меняем передается явно в виде параметра вместо того, чтобы доставать его из auth-токена
 let updateUser = (req, res) => {
 
-    User.findById({_id: req.params.id}).then( doc => {
-        // [!] Для вывода всех исключений в единый кэтч ставим return
-        return Object.assign(doc, req.body).save().then( doc => {
-            res.send({
-                message: "Document updated!",
-                doc: doc
-            })
-        });
-    }).catch( e => {
-        console.log(e)
-        var mess = e.message || e
-        res.status(400)
-        res.send({'error': mess})
-    } );
+  let userId = req.params.id;
+
+  if( req.headers['content-type'].match( /application\/x-www-form-urlencoded/i ) ||
+      req.headers['content-type'].match( /application\/json/i )
+  ){
+    // OK
+  } else
+    return res.status(400).send({'error': 'Invalid type of Content: ' + req.headers['content-type']})
+
+  User.findById({_id: userId})
+    .then(doc => {
+
+    if (doc === null)
+      throw new Error("No user with such ID: " + userId)
+
+    // [!] doc при распечатке его через console.log() выглядит как объект: {name: foo, email: bar, ...}
+    // Однако, в реальности это результат действия toString()-метода.
+    // Сам объект имеет куда более сложную структуру, а собственно, документ 'пользователь' лежит в поле doc._doc
+
+    let _passwordOld = doc._doc.password
+
+    let userObject = Object.assign(doc, req.body)
+
+    if (req.body.password === undefined ||
+      userObject.isPasswordModified() !== true
+    ) {
+      // убрать из объекта поле password
+      delete userObject._doc.password
+      userObject._doc.password = _passwordOld
+    }
+
+    // [!] Для вывода всех исключений в единый кэтч ставим return
+    return userObject.save().then(doc => {
+      res.send({
+        message: "Document updated!",
+        doc: doc
+      })
+    });
+
+  }).catch(e => {
+    console.log(e)
+    var mess = e.message || e
+    res.status(400)
+    res.send({'error': mess})
+  });
 }
 
 let getAll = (req, res) => {

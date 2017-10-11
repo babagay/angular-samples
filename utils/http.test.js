@@ -43,7 +43,8 @@ var mockTodo = new Todo({
     id: 777,
     title: "mock TODO item",
     completed: true,
-    completedAt: null
+    completedAt: null,
+    _creator: '59b02bf23b6a8927e8b944df'
 });
 
 var mockObjId = mockTodo._id
@@ -56,10 +57,11 @@ describe('hooks', function() {
         // Сюда заходит только при использовании запуска через сущность, созданную в инструменте Run -> Mocka с юзер-интерфейсом qunit
         // @see http://mochajs.org/#interfaces
 
+
         mockTodo.save().then( doc => {
 
         }).catch( e => {
-
+            console.log("before hooks error triggered: ",e.message)
         } );
     });
 
@@ -212,7 +214,7 @@ describe('Todo api testing', () => {
            .end( done );
     });
 
-    it('should update todo', done => {
+    it('Should update todo (PATCH: todo)', done => {
 
        let title = "Changed title"
 
@@ -220,6 +222,7 @@ describe('Todo api testing', () => {
 
         changedTodo.title = title
         changedTodo._id = mockObjId
+        changedTodo._creator = '59b03ff49b0c0e125002e172'
 
        request( todoApp )
            .patch( `/todo/` )

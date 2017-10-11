@@ -62,14 +62,15 @@ let brokenUser = {
 let _id = ""
 let _id2 = ""
 
-
+let someTmpToken = ""
 
 // Можно создать объект с готовым _id
 let mockObjTodo = {
     completed: false,
-    title: "mock Todo",
+    title: "mock Todo Object",
     id: 1380,
-    _id: new ObjectID()
+    _id: new ObjectID(),
+    _creator: '59b02bf23b6a8927e8b944df'
 }
 
 let userMeTest_token;
@@ -153,15 +154,16 @@ describe('Mongoose CRUD User testing',() => {
 
     // todo
     // Уникальность имейла не работает
-    xit('Should not create user if email is already used', (done) => {
-        chai.request(server)
-            .post('/user')
-            .send(anotherUser)
-            .end((err, res) => {
-                res.should.have.status(404);
-
-            })
-    });
+    //    - закомментировано, чтоб не выводились лишние сообщения в консоли
+    // xit('Should not create user if email is already used', (done) => {
+    //     chai.request(server)
+    //         .post('/user')
+    //         .send(anotherUser)
+    //         .end((err, res) => {
+    //             res.should.have.status(404);
+    //
+    //         })
+    // });
 
     it('Should not create user if there are validation errors', (done) => {
         chai.request(server)
@@ -334,6 +336,7 @@ describe('Mongoose CRUD User testing',() => {
                                 expect(doc.tokens.length).equal(0); // массив tokens пустой
 
                                 // expect(doc._id).equal( _id2  ); // не работает
+                                expect( doc._id.equals(_id2) ).equal( true )
 
                                 doc.tokens.length.should.eq(0);
                                 done();
@@ -383,6 +386,9 @@ describe('Mongoose CRUD User testing',() => {
             .get(`/user/me`)
             .set('x-auth',token)
             .end( (err,res) => {
+
+                someTmpToken = res.body.User.tokens[0].token
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 res.body.should.have.property('User');
@@ -450,10 +456,19 @@ describe('Mongoose CRUD User testing',() => {
 
         testUser.name = "Derek"
 
+        let token = someTmpToken
+
         chai.request(server)
             .put(`/user/${_id}`)
+            .set('x-auth',token)
             .send(testUser)
             .end( (err,res) => {
+
+                if(err){
+                  console.log("Update a user test error")
+                  console.dir(err)
+                }
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 res.body.should.have.property('message');
@@ -464,35 +479,6 @@ describe('Mongoose CRUD User testing',() => {
             })
     });
 
-    it('Remove a test user', (done) => {
-
-        chai.request(server)
-            .delete(`/user/${_id}`)
-            .end( (err,res) => {
-                res.should.have.status(200);
-                res.body.should.be.a('object');
-                res.body.should.have.property('message').equal('Item successfully deleted!');
-                res.body.r.n.should.equal(1);
-                res.body.r.should.have.property('ok').equal(1);
-
-                done()
-            })
-    });
-
-    it('Remove another test user', (done) => {
-
-        chai.request(server)
-            .delete(`/user/${_id2}`)
-            .end( (err,res) => {
-                res.should.have.status(200);
-                res.body.should.be.a('object');
-                res.body.should.have.property('message').equal('Item successfully deleted!');
-                res.body.r.n.should.equal(1);
-                res.body.r.should.have.property('ok').equal(1);
-
-                done()
-            })
-    });
 
     // Не должен быть добавлен юзер без имейла
     it('Should return 206 (POST user) if user is invalid', (done) => {
@@ -526,13 +512,14 @@ describe('Mongoose CRUD User testing',() => {
     /**
      * Кладём в базу тудушку, запрашиваем ее по апи и вручную удаляем
      */
-    it('Get Todo test', done => {
+    it('Get single Todo test', done => {
         let id = Math.round( Math.random() * 100 );
         let todo = new Todo({
             id: id,
             // _id: new ObjectID(),
             completed: false,
             title: "New todo item " + id,
+            _creator: '59b02bf23b6a8927e8b944df'
         });
 
         // Добавляем новую тудушку вручную
@@ -579,12 +566,15 @@ describe('Mongoose CRUD User testing',() => {
     );
 
     /**
-     * Тут присутсвует некоторая магия, т.к. мы отсылаем mockObjTodo с полем _id в виде объекта,
-     * а при сохранении мы ожидаем строку. Т.е. где-то при отправке неявно выполняется toString()
+     * Хотя, мы отсылаем mockObjTodo с полем _id в виде объекта,
+     * перед сохранением используем посредника, который берет строку и вновь создает объект ObjectID, т.к.
+     * на каком-то этапе доставки происходит исполнение mockObjTodo.toString()
      */
-    it("Insert mock todo object with _id", done => {
+    it("Should insert mock todo object with _id", done => {
 
-        chai.request(server).post('/todo')
+        chai.request(server)
+            .post('/todo')
+            .set('x-auth',someTmpToken)
             .send(mockObjTodo)
             .then( res => {
 
@@ -604,7 +594,23 @@ describe('Mongoose CRUD User testing',() => {
             });
     });
 
-    it("Delete mock todo object by _id", done => {
+    it("Should fetch all the Todos of user " + testUser.name, done => {
+      chai.request(server)
+        .get('/todo')
+        .set('x-auth',someTmpToken)
+        .then( res => {
+
+          res.body.should.be.a('array')
+          expect(res.body.length).equal(1)
+
+          done()
+        })
+        .catch( e => {
+          done(e)
+        });
+    });
+
+    it("Delete mock todo object by _id " + mockObjTodo._id.toHexString(), done => {
         chai.request(server).delete(`/todo/${mockObjTodo._id.toHexString()}`)
             .send(mockObjTodo)
             .then( res => {
@@ -672,5 +678,36 @@ describe('Mongoose CRUD User testing',() => {
                 done()
             });
     });
+
+  it('Remove a test user', (done) => {
+
+    chai.request(server)
+      .delete(`/user/${_id}`)
+      .end( (err,res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('message').equal('Item successfully deleted!');
+        res.body.r.n.should.equal(1);
+        res.body.r.should.have.property('ok').equal(1);
+
+        done()
+      })
+  });
+
+  it('Remove another test user', (done) => {
+
+    chai.request(server)
+      .delete(`/user/${_id2}`)
+      .end( (err,res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('message').equal('Item successfully deleted!');
+        res.body.r.n.should.equal(1);
+        res.body.r.should.have.property('ok').equal(1);
+
+        done()
+      })
+  });
+
 
 });

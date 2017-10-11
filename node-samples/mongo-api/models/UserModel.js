@@ -206,6 +206,7 @@ SchemaUser.statics.findByCredentials = async function (email, password) {
 };
 
 /**
+ * Считаем, что пароль в открытом виде, если в конце слова стоит "!"
  * Если в запросе прилетел пароль в виде plain-text, (c "!" на конце) считаем, что юзер хочет изменить пароль
  * Тогда, нам надо положить в базу хэш этого пароля
  * Не представляю, как определить, что полученная строка - это именно не хэш, а просто текст, поэтому,
@@ -220,6 +221,13 @@ SchemaUser.methods.isPasswordModified = function () {
     let userFromRequest = this
     let userPass = undefined
 
+    // всегда выдаёт false
+    // if( !({}).hasOwnProperty.call(userFromRequest,'password') ){
+    //   // поле password отсутсвует
+    //   return false
+    // }
+
+
     try {
         userPass = userFromRequest.password
     } catch (e){}
@@ -229,6 +237,8 @@ SchemaUser.methods.isPasswordModified = function () {
 
     if( userPass.slice(-1) === '!' )
         return true
+
+    return false
 }
 
 // Hook перед операцией сохранения
@@ -245,8 +255,14 @@ SchemaUser.pre('save', function(next) {
         user.createdAt = now.getTime();
     }
 
-    // Захешировать пароль, если он пришел в открытом виде
-    if( user.isPasswordModified() ){
+    // bcrypt.genSalt(10).then( saltGenerated => {
+    //   let hashGenerated = bcrypt.hashSync(user.password, saltGenerated)
+    //   user.password = hashGenerated
+    //   next()
+    // });
+
+    // Если пароль пришел в открытом виде, Захешировать
+    if( user.isPasswordModified()  ){
 
         user.password = user.password.slice(0, -1) // Удалить спецсимвол на конце строки, который говорит о том, что идет смена пароля
 
@@ -256,8 +272,31 @@ SchemaUser.pre('save', function(next) {
             next()
         })
 
-    } else
-        next();
+    } else {
+      next()
+    }
+
+
+  /* else {
+  // иначе, поле password не значимо и должно быть отброшено
+
+  // let usr = _.pickBy(user, (val,name) =>
+  //   /// Перечислены допустимые к изменению поля. Это в корне не правильно - их надо получать автоматическим способом
+  //   (name === 'name' || name === 'email' || name === 'createdAt' )
+  // );
+
+  // [?] Не работает - в базе , в поле password оказывается строка, которую мы и прислали
+  // delete user.password
+
+  // [?] вообще не работает
+  // user = null
+
+  // Если передан пароль без специального символа в конце, выбросить исключение
+  next(
+    new Error("Password field can not be updated")
+  );
+}
+*/
 
     // getJwtToken({},'asd').then( token => {
     //         userObj.tokens = {}
