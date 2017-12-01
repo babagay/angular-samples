@@ -187,7 +187,7 @@ describe('Http json testing', function() {
 
 
 
-describe('Todo api testing', () => {
+// describe('Todo api testing', () => {
     // [!] тесты перенесены в user.crud.test
     // it('should return 404 with message "id is invalid"', done => {
     //
@@ -216,46 +216,46 @@ describe('Todo api testing', () => {
     //        .end( done );
     // });
 
-    it('Should update todo (PATCH: todo)', done => {
-
-       let title = "Changed title"
-
-       let changedTodo = Object.create(mockTodo)
-
-        changedTodo.title = title
-        changedTodo._id = mockObjId
-        changedTodo._creator = '59b03ff49b0c0e125002e172'
-
-       request( todoApp )
-           .patch( `/todo/` )
-           .send(changedTodo)
-           .expect( 200 )
-           .expect( res => {
-               expect( res.body.doc.title ).toBe( title )
-               expect( res.body.doc.completedAt ).toBeA( 'number' )
-           })
-           .end( done );
-    });
-
-    it('should not update todo with invalid _id', done => {
-
-       let title = "Changed title+"
-
-       let changedTodo = Object.create({title:'ASD'}) // [?] когда тут стояло mockTodo, отваливался следующий тест
-
-        changedTodo._id = '598d72566306ff10b410be59+'
-
-        changedTodo.title = title
-
-       request( todoApp )
-           .patch( `/todo/` )
-           .send(changedTodo)
-           .expect( 400 )
-           .expect( res => {
-
-           })
-           .end( done );
-    });
+    // it('Should update todo (PATCH: todo)', done => {
+    //
+    //    let title = "Changed title"
+    //
+    //    let changedTodo = Object.create(mockTodo)
+    //
+    //     changedTodo.title = title
+    //     changedTodo._id = mockObjId
+    //     changedTodo._creator = '59b03ff49b0c0e125002e172'
+    //
+    //    request( todoApp )
+    //        .patch( `/todo/` )
+    //        .send(changedTodo)
+    //        .expect( 200 )
+    //        .expect( res => {
+    //            expect( res.body.doc.title ).toBe( title )
+    //            expect( res.body.doc.completedAt ).toBeA( 'number' )
+    //        })
+    //        .end( done );
+    // });
+    //
+    // it('should not update todo with invalid _id', done => {
+    //
+    //    let title = "Changed title+"
+    //
+    //    let changedTodo = Object.create({title:'ASD'}) // [?] когда тут стояло mockTodo, отваливался следующий тест
+    //
+    //     changedTodo._id = '598d72566306ff10b410be59+'
+    //
+    //     changedTodo.title = title
+    //
+    //    request( todoApp )
+    //        .patch( `/todo/` )
+    //        .send(changedTodo)
+    //        .expect( 400 )
+    //        .expect( res => {
+    //
+    //        })
+    //        .end( done );
+    // });
 
     // Перенесены в user.crud.test
     // it('should delete todo and return 200', done => {
@@ -284,7 +284,7 @@ describe('Todo api testing', () => {
     //        })
     //        .end( done );
     // });
-});
+// });
 
 var validateErrorResponseStructure = res => {
     if( !('error' in res.body) )

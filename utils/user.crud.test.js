@@ -298,7 +298,7 @@ describe('Mongoose CRUD User testing',() => {
 
     // сейчас решил объект юзера не возвращать, т.к. юзается метод монгуса, который апдейтид, но не отдает новый объект
     // Так как после предыдущих тестов токен обнулился из-за неудачного  логина, надо снова залогиниться
-    // [!] Fixme: тест отваливается по непонятной схеме
+    // [!] Fixme: тест периодически отваливается по непонятной схеме. В случае отвала в базе остается тудушка "mock TODO item"
     it('Should remove auth token on logout of user ' + anotherUser.name, (done) => {
 
         let user = _.pick(anotherUser, ['email', 'password'])
@@ -663,6 +663,53 @@ describe('Mongoose CRUD User testing',() => {
       });
 
   });
+
+  // todo
+  /*
+  it('Should update todo (PATCH: todo)', done => {
+
+    let title = "Changed title"
+
+    let changedTodo = Object.create(mockTodo)
+
+    changedTodo.title = title
+    changedTodo._id = mockObjId
+    changedTodo._creator = '59b03ff49b0c0e125002e172'
+
+    request( todoApp )
+      .patch( `/todo/` )
+      .send(changedTodo)
+      .expect( 200 )
+      .expect( res => {
+        expect( res.body.doc.title ).toBe( title )
+        expect( res.body.doc.completedAt ).toBeA( 'number' )
+      })
+      .end( done );
+  });
+
+  it('should not update todo with invalid _id', done => {
+
+    let title = "Changed title+"
+
+    let changedTodo = Object.create({title:'ASD'}) // [?] когда тут стояло mockTodo, отваливался следующий тест
+
+    changedTodo._id = '598d72566306ff10b410be59+'
+
+    changedTodo.title = title
+
+    request( todoApp )
+      .patch( `/todo/` )
+      .send(changedTodo)
+      .expect( 400 )
+      .expect( res => {
+
+      })
+      .end( done );
+  });
+  */
+
+
+
 
 
     it("Delete mock todo object by _id " + mockObjTodo._id.toHexString(), done => {
